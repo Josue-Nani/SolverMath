@@ -1,0 +1,564 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Newton-Raphson | SolverANS{% endblock %}
+
+{% block content %}
+
+  <!-- Hero Section -->
+  <div class="hero min-h-[40vh] bg-gradient-to-r from-primary to-secondary">
+    <div class="hero-content text-center">
+      <div class="max-w-2xl" data-aos="fade-down">
+        <h1 class="text-5xl font-bold text-white">Newton-Raphson</h1>
+        <p class="py-6 text-white/90">Encuentra raíces de funciones con precisión matemática</p>
+        
+        <!-- Fórmulas principales -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+          <div class="badge badge-lg bg-white/20 text-white border-none p-4">
+            <div class="text-center">
+              <div class="text-sm opacity-75 mb-1">Fórmula iterativa:</div>
+              $$ x_{n+1} = x_n - \frac{f(x_n)}{f'(x_n)} $$
+            </div>
+          </div>
+          <div class="badge badge-lg bg-white/20 text-white border-none p-4">
+            <div class="text-center">
+              <div class="text-sm opacity-75 mb-1">Derivada automática:</div>
+              <div class="text-xs">$$ f'(x) = \frac{d}{dx}[f(x)] $$</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="container mx-auto px-4 py-8">
+    <div class="grid lg:grid-cols-3 gap-8">
+      
+      <!-- Formulario -->
+      <div class="lg:col-span-2" data-aos="fade-right">
+        <div class="card bg-base-100 shadow-xl">
+          <div class="card-body">
+            <h2 class="card-title text-2xl mb-6">
+              <div class="badge badge-primary badge-lg">📊</div>
+              Calculadora Newton-Raphson
+              {% if datos_precargados %}
+                <div class="badge badge-success badge-sm ml-2">DATOS PRECARGADOS</div>
+              {% endif %}
+            </h2>
+            
+            {% if datos_precargados %}
+              <!-- DEBUG: Mostrar datos recibidos -->
+              <div class="alert alert-info mb-4">
+                <div class="text-sm">
+                  <strong>DEBUG - Datos recibidos:</strong><br>
+                  Función: "{{ datos_precargados.funcion }}"<br>
+                  x0: "{{ datos_precargados.x0 }}" (longitud: {{ datos_precargados.x0|length }})<br>
+                  Tolerancia: "{{ datos_precargados.tolerancia }}" (longitud: {{ datos_precargados.tolerancia|length }})<br>
+                  Decimales: "{{ datos_precargados.decimales }}"
+                </div>
+              </div>
+            {% endif %}
+            
+            <form method="POST" onsubmit="return prepararEnvio()" class="space-y-6" id="newton-form">
+              {% csrf_token %}
+              
+              <!-- Función -->
+              <div class="form-control w-full">
+                <label class="label">
+                  <span class="label-text font-semibold text-lg">🧮 Función f(x):</span>
+                  <div class="tooltip" data-tip="Usa sintaxis matemática estándar">
+                    <div class="badge badge-info badge-sm">?</div>
+                  </div>
+                </label>
+                <math-field id="math-input" virtual-keyboard-mode="onfocus" 
+                  class="input input-bordered input-primary w-full h-16 text-xl font-mono bg-base-200"
+                  placeholder="Ejemplo: x^2 - 4"></math-field>
+                <input type="hidden" name="funcion" id="funcion" required>
+                <label class="label">
+                  <span class="label-text-alt">Ejemplos: x^2-4, sin(x), exp(x)-2, log(x)</span>
+                </label>
+                
+                <!-- Botones de ejemplo -->
+                <div class="flex flex-wrap gap-2 mt-2">
+                  <button type="button" class="btn btn-xs btn-outline" onclick="setExample('x^2-4')">x²-4</button>
+                  <button type="button" class="btn btn-xs btn-outline" onclick="setExample('sin(x)-0.5')">sin(x)-0.5</button>
+                  <button type="button" class="btn btn-xs btn-outline" onclick="setExample('exp(x)-2')">e^x-2</button>
+                  <button type="button" class="btn btn-xs btn-outline" onclick="setExample('x^3-x-1')">x³-x-1</button>
+                </div>
+              </div>
+
+              <!-- Parámetros en grid -->
+              <div class="grid md:grid-cols-3 gap-4">
+                <div class="form-control">
+                  <label class="label">
+                    <span class="label-text font-semibold">📍 Valor inicial (x₀)</span>
+                  </label>
+                  <input type="number" step="any" name="x0" 
+                    class="input input-bordered input-primary font-mono" 
+                    placeholder="1.5" 
+                    value="{% if datos_precargados and datos_precargados.x0 %}{{ datos_precargados.x0 }}{% endif %}"
+                    required>
+                </div>
+                
+                <div class="form-control">
+                  <label class="label">
+                    <span class="label-text font-semibold">🎯 Tolerancia</span>
+                  </label>
+                  <input type="number" step="any" name="tolerancia" 
+                    class="input input-bordered input-primary font-mono" 
+                    placeholder="0.0001" 
+                    value="{% if datos_precargados and datos_precargados.tolerancia %}{{ datos_precargados.tolerancia }}{% endif %}"
+                    required>
+                </div>
+                
+                <div class="form-control">
+                  <label class="label">
+                    <span class="label-text font-semibold">🔢 Decimales</span>
+                  </label>
+                  <input type="number" name="decimales" 
+                    value="{% if datos_precargados %}{{ datos_precargados.decimales }}{% else %}6{% endif %}" 
+                    min="1" max="15"
+                    class="input input-bordered input-primary font-mono" required>
+                </div>
+              </div>
+
+              <!-- Botón calcular -->
+              <div class="card-actions justify-center mt-8">
+                <button type="submit" class="btn btn-primary btn-lg w-full" id="calc-btn">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  </svg>
+                  <span class="btn-text">CALCULAR RAÍZ</span>
+                  <span class="loading loading-spinner loading-md hidden"></span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sidebar con información -->
+      <div class="space-y-6" data-aos="fade-left">
+        <!-- Card de resultado -->
+        {% if resultado or error %}
+        <div class="card bg-base-100 shadow-2xl {% if resultado %}border-success{% else %}border-error{% endif %}">
+          <div class="card-body">
+            {% if resultado %}
+              <h3 class="card-title text-success justify-center text-2xl">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                ¡Raíz encontrada!
+              </h3>
+              <div class="text-center">
+                <div class="math-formula-highlight text-4xl font-bold mb-4">
+                  $$ x = {{ resultado }} $$
+                </div>
+                <div class="badge badge-success badge-lg">Convergencia exitosa</div>
+              </div>
+              
+              <!-- Mostrar función y derivada calculada -->
+              {% if derivada_str %}
+              <div class="mt-6 p-4 bg-base-200 rounded-lg border border-success/20">
+                <h4 class="font-semibold text-success mb-3 text-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                  </svg>
+                  Funciones utilizadas
+                </h4>
+                <div class="space-y-4">
+                  <div class="math-formula-highlight">
+                    <p class="text-sm text-base-content/70 mb-2 text-center">Función original:</p>
+                    <div class="text-center text-lg math-content">
+                      $$ f(x) = {{ funcion_original|safe }} $$
+                    </div>
+                  </div>
+                  <div class="math-formula-highlight">
+                    <p class="text-sm text-base-content/70 mb-2 text-center">Derivada calculada:</p>
+                    <div class="text-center text-lg math-content">
+                      $$ f'(x) = {{ derivada_str|safe }} $$
+                    </div>
+                  </div>
+                </div>
+              </div>
+              {% endif %}
+            {% endif %}
+            
+            {% if error %}
+              <h3 class="card-title text-error justify-center text-xl">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Error en el cálculo
+              </h3>
+              <div class="alert alert-error">
+                <span>{{ error }}</span>
+              </div>
+            {% endif %}
+          </div>
+        </div>
+        {% endif %}
+
+        <!-- Card de información -->
+        <div class="card bg-base-100 shadow-xl">
+          <div class="card-body">
+            <h3 class="card-title">📊 Información del método</h3>
+            <div class="stats stats-vertical shadow bg-base-200">
+              <div class="stat">
+                <div class="stat-title">Convergencia</div>
+                <div class="stat-value text-primary text-lg">Cuadrática</div>
+                <div class="stat-desc">Muy rápida cerca de la raíz</div>
+              </div>
+              <div class="stat">
+                <div class="stat-title">Requisitos</div>
+                <div class="stat-value text-secondary text-lg">f'(x) ≠ 0</div>
+                <div class="stat-desc">Derivada no nula</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card de consejos -->
+        <div class="card bg-base-100 shadow-xl">
+          <div class="card-body">
+            <h3 class="card-title">💡 Consejos de uso</h3>
+            <div class="space-y-2">
+              <div class="flex items-start gap-2">
+                <span class="text-success">✓</span>
+                <span class="text-sm">Usa funciones continuas y derivables</span>
+              </div>
+              <div class="flex items-start gap-2">
+                <span class="text-success">✓</span>
+                <span class="text-sm">Elige un x₀ cerca de la raíz esperada</span>
+              </div>
+              <div class="flex items-start gap-2">
+                <span class="text-success">✓</span>
+                <span class="text-sm">Tolerancia típica: 0.0001 a 0.00001</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sección de procedimiento -->
+    {% if procedimiento and request.user.is_authenticated and request.user.username != "invitado" %}
+    <div class="mt-12 max-w-7xl mx-auto" data-aos="fade-up">
+      <div class="text-center mb-8">
+        <h2 class="text-4xl font-bold mb-4">📈 Procedimiento Detallado</h2>
+        <div class="badge badge-primary badge-lg">{{ procedimiento|length }} iteraciones realizadas</div>
+      </div>
+      
+      <!-- Tabla de iteraciones -->
+      <div class="card bg-base-100 shadow-xl overflow-hidden">
+        <div class="card-body p-0">
+          <div class="overflow-x-auto">
+            <table class="table table-zebra table-lg">
+              <thead class="bg-primary text-primary-content">
+                <tr class="text-center">
+                  <th class="text-lg">🔢 Iteración</th>
+                  <th class="text-lg">📍 x₀</th>
+                  <th class="text-lg">📊 f(x₀)</th>
+                  <th class="text-lg">📈 f'(x₀)</th>
+                  <th class="text-lg">🎯 x₁</th>
+                  <th class="text-lg">📏 Error</th>
+                </tr>
+              </thead>
+              <tbody class="text-center font-mono">
+                {% for paso in procedimiento %}
+                <tr class="hover:bg-primary/10 transition-colors duration-200">
+                  <td class="font-bold text-primary">{{ paso.iteracion }}</td>
+                  <td>{{ paso.x0 }}</td>
+                  <td class="text-success">{{ paso.f_x0 }}</td>
+                  <td class="text-info">{{ paso.f_prime_x0 }}</td>
+                  <td class="text-warning">{{ paso.x1 }}</td>
+                  <td class="text-error">{{ paso.tolerancia }}</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Fórmulas aplicadas -->
+      <div class="mt-8">
+        <h3 class="text-3xl font-bold text-center mb-6">🧮 Fórmulas Aplicadas</h3>
+        <div class="grid gap-4">
+          {% for paso in procedimiento %}
+          <div class="card bg-base-100 shadow-lg" data-aos="flip-left" data-aos-delay="{{ forloop.counter0|add:'100' }}">
+            <div class="card-body">
+              <div class="flex items-center justify-between mb-4">
+                <div class="badge badge-primary badge-lg">Iteración {{ paso.iteracion }}</div>
+                <div class="text-base-content/70 text-sm">Paso {{ forloop.counter }}</div>
+              </div>
+              <div class="math-formula-highlight text-center overflow-x-auto">
+                $$ {{ paso.formula }} $$
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Mensaje para usuarios no autenticados -->
+    {% if not request.user.is_authenticated or request.user.username == "invitado" %}
+    <div class="mt-12 text-center max-w-7xl mx-auto" data-aos="fade-up">
+      <div class="card bg-base-100 shadow-xl max-w-md mx-auto">
+        <div class="card-body">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-warning mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+          </svg>
+          <h3 class="text-xl font-bold mb-2">🔐 Contenido Premium</h3>
+          <p class="text-base-content/70 mb-4">Inicia sesión para ver el procedimiento completo con fórmulas detalladas</p>
+          <a href="{% url 'login' %}" class="btn btn-primary">Iniciar Sesión</a>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Variables principales específicas para Newton-Raphson
+    const mathInput = document.getElementById("math-input");
+    const funcionInput = document.getElementById("funcion");
+    const form = document.getElementById("newton-form");
+    const loadingBtn = document.getElementById("calc-btn");
+
+    // Función para convertir expresiones matemáticas
+    function convertirAMathPython(expresion) {
+      if (!expresion) return '';
+      
+      expresion = expresion.replace(/\s+/g, '');
+
+      return expresion
+        .replace(/\^/g, "**")
+        .replace(/×/g, "*")
+        .replace(/÷/g, "/")
+        .replace(/ln\(/g, "log(")
+        .replace(/e\^\(?([^)]+)\)?/gi, "exp($1)")
+        .replace(/([0-9])([a-zA-Z(])/g, "$1*$2")
+        .replace(/\bpi\b/g, "3.14159265359")
+        .replace(/\be\b/g, "2.71828182846");
+    }
+
+    // Función de validación
+    function validarFuncion(expresion) {
+      const operadoresPermitidos = /^[x\d\+\-\*\/\^\(\)\.\s\w]*$/;
+      if (!operadoresPermitidos.test(expresion)) {
+        return false;
+      }
+      
+      // Verificar balanceado de paréntesis
+      let contador = 0;
+      for (let char of expresion) {
+        if (char === '(') contador++;
+        if (char === ')') contador--;
+        if (contador < 0) return false;
+      }
+      return contador === 0;
+    }
+
+    // Función para mostrar/ocultar indicador de carga
+    function mostrarCarga(mostrar) {
+      const btnText = loadingBtn.querySelector('.btn-text');
+      const btnSpinner = loadingBtn.querySelector('.loading');
+      
+      if (mostrar) {
+        loadingBtn.disabled = true;
+        if (btnText) btnText.classList.add('hidden');
+        if (btnSpinner) btnSpinner.classList.remove('hidden');
+        loadingBtn.classList.add('btn-disabled');
+      } else {
+        loadingBtn.disabled = false;
+        if (btnText) btnText.classList.remove('hidden');
+        if (btnSpinner) btnSpinner.classList.add('hidden');
+        loadingBtn.classList.remove('btn-disabled');
+      }
+    }
+
+    // Función para preparar el envío del formulario
+    function prepararEnvio() {
+      const expresionOriginal = mathInput.getValue("ascii-math").trim();
+      const convertido = convertirAMathPython(expresionOriginal);
+
+      if (!convertido || convertido.length < 1) {
+        mostrarNotificacion("La función ingresada no es válida.", "error");
+        return false;
+      }
+
+      if (!validarFuncion(convertido)) {
+        mostrarNotificacion("La función contiene caracteres no válidos.", "error");
+        return false;
+      }
+
+      funcionInput.value = convertido;
+      
+      // Mostrar indicador de carga
+      mostrarCarga(true);
+      
+      return true;
+    }
+
+    // Función para mostrar notificaciones
+    function mostrarNotificacion(mensaje, tipo = 'info') {
+      const alertClass = tipo === 'error' ? 'alert-error' : 'alert-info';
+      const icono = tipo === 'error' ? '❌' : 'ℹ️';
+      
+      const notification = document.createElement('div');
+      notification.className = `alert ${alertClass} fixed top-20 right-4 z-50 w-96 shadow-lg`;
+      notification.innerHTML = `
+        <span>${icono} ${mensaje}</span>
+        <button class="btn btn-sm btn-ghost" onclick="this.parentElement.remove()">✕</button>
+      `;
+      
+      document.body.appendChild(notification);
+      
+      // Auto eliminar después de 5 segundos
+      setTimeout(() => {
+        if (notification.parentElement) {
+          notification.remove();
+        }
+      }, 5000);
+    }
+
+    // Función para procesar contenido matemático dinámico
+    function procesarMathJax() {
+      if (window.MathJax && window.MathJax.typesetPromise) {
+        // Procesar específicamente los elementos con clase math-content
+        const mathElements = document.querySelectorAll('.math-content');
+        if (mathElements.length > 0) {
+          window.MathJax.typesetPromise(mathElements).then(() => {
+            console.log('Contenido matemático procesado correctamente');
+          }).catch((err) => {
+            console.error('Error procesando MathJax:', err);
+          });
+        }
+      }
+    }
+
+    // Función para establecer ejemplos
+    function setExample(value) {
+      if (mathInput) {
+        mathInput.setValue(value);
+        mathInput.focus();
+      }
+    }
+
+    // Eventos cuando el DOM está listo
+    document.addEventListener('DOMContentLoaded', function () {
+      // Precargar datos del historial si están disponibles
+      {% if datos_precargados %}
+        // Mostrar notificación de precarga
+        mostrarNotificacion('✅ Datos cargados desde el historial', 'success');
+        
+        // Precargar función en el math-field
+        const mathInput = document.getElementById('math-input');
+        const funcionHidden = document.getElementById('funcion');
+        
+        if (mathInput && funcionHidden) {
+          // Dar tiempo al math-field para inicializarse completamente
+          setTimeout(() => {
+            const funcionValue = '{{ datos_precargados.funcion|escapejs }}';
+            mathInput.value = funcionValue;
+            funcionHidden.value = funcionValue;
+            
+            // Forzar actualización visual del math-field
+            if (mathInput.setValue) {
+              mathInput.setValue(funcionValue);
+            }
+            
+            console.log('Función precargada:', funcionValue);
+          }, 100);
+        }
+        
+        // Validar que los campos numéricos tengan valores
+        setTimeout(() => {
+          const camposNumericos = [
+            { elemento: document.querySelector('input[name="x0"]'), nombre: 'x0', valor: '{{ datos_precargados.x0 }}' },
+            { elemento: document.querySelector('input[name="tolerancia"]'), nombre: 'tolerancia', valor: '{{ datos_precargados.tolerancia }}' },
+            { elemento: document.querySelector('input[name="decimales"]'), nombre: 'decimales', valor: '{{ datos_precargados.decimales }}' }
+          ];
+          
+          let camposPrecargados = [];
+          
+          camposNumericos.forEach(({ elemento, nombre, valor }) => {
+            if (elemento && valor && valor !== '') {
+              elemento.value = valor;
+              elemento.classList.add('ring-2', 'ring-success', 'ring-opacity-50');
+              camposPrecargados.push(nombre);
+              
+              // Quitar el resaltado después de 3 segundos
+              setTimeout(() => {
+                elemento.classList.remove('ring-2', 'ring-success', 'ring-opacity-50');
+              }, 3000);
+            }
+          });
+          
+          // También resaltar el math-field si tiene valor
+          if (mathInput && mathInput.value) {
+            mathInput.style.border = '2px solid oklch(var(--su))';
+            setTimeout(() => {
+              mathInput.style.border = '';
+            }, 3000);
+          }
+          
+          if (camposPrecargados.length > 0) {
+            console.log('Campos precargados:', camposPrecargados);
+          }
+        }, 200);
+      {% endif %}
+
+      // Inicializar AOS (animaciones)
+      if (typeof AOS !== 'undefined') {
+        AOS.init({
+          duration: 800,
+          easing: 'ease-in-out',
+          once: true,
+          offset: 100
+        });
+      }
+
+      // Evento para manejar el envío del formulario
+      if (form) {
+        form.addEventListener('submit', function(e) {
+          if (!prepararEnvio()) {
+            e.preventDefault();
+          }
+        });
+      }
+
+      // Ocultar indicador de carga al cargar la página
+      if (loadingBtn) {
+        mostrarCarga(false);
+      }
+
+      // Auto-focus en el campo de función
+      if (mathInput) {
+        setTimeout(() => mathInput.focus(), 500);
+      }
+
+      // Forzar renderizado de MathJax para contenido dinámico
+      setTimeout(() => {
+        procesarMathJax();
+      }, 1500);
+
+      console.log('🚀 Newton-Raphson Calculator inicializado correctamente');
+    });
+
+    // Manejo de errores globales
+    window.addEventListener('error', function(e) {
+      console.error('Error capturado:', e.error);
+      mostrarNotificacion('Ha ocurrido un error inesperado', 'error');
+    });
+
+    // Eliminar cualquier evento beforeunload existente
+    window.onbeforeunload = null;
+    window.removeEventListener('beforeunload', arguments.callee, false);
+  </script>
+{% endblock %}

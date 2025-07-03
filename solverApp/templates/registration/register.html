@@ -1,0 +1,530 @@
+{% load form_filters %}
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crear Cuenta | SolverANS</title>
+    
+    <!-- Tailwind CSS + DaisyUI -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/full.min.css" rel="stylesheet" type="text/css" />
+    
+    <!-- AOS Animation Library -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    
+    <!-- Particle.js -->
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+    
+    <!-- Custom CSS -->
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+        
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        /* Glassmorphism */
+        .glass {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .glass-dark {
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        /* Gradientes animados */
+        .gradient-bg {
+            background: linear-gradient(-45deg, #667eea, #764ba2, #f093fb, #f5576c, #4facfe, #00f2fe, #43e97b, #38f9d7);
+            background-size: 400% 400%;
+            animation: gradientShift 20s ease infinite;
+        }
+        
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            25% { background-position: 100% 50%; }
+            50% { background-position: 100% 100%; }
+            75% { background-position: 0% 100%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        /* Partículas flotantes */
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg) scale(1); opacity: 0.7; }
+            33% { transform: translateY(-30px) rotate(5deg) scale(1.05); opacity: 1; }
+            66% { transform: translateY(-15px) rotate(-3deg) scale(0.95); opacity: 0.8; }
+        }
+        
+        @keyframes float-reverse {
+            0%, 100% { transform: translateY(0px) rotate(0deg) scale(1); opacity: 0.6; }
+            50% { transform: translateY(-25px) rotate(-5deg) scale(1.1); opacity: 1; }
+        }
+        
+        @keyframes spiral {
+            0% { transform: rotate(0deg) translateX(50px) rotate(0deg); }
+            100% { transform: rotate(360deg) translateX(50px) rotate(-360deg); }
+        }
+        
+        .math-float {
+            animation: float 12s ease-in-out infinite;
+        }
+        
+        .math-float-reverse {
+            animation: float-reverse 15s ease-in-out infinite;
+        }
+        
+        .math-spiral {
+            animation: spiral 25s linear infinite;
+        }
+        
+        /* Efectos hover premium */
+        .btn-premium {
+            position: relative;
+            overflow: hidden;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            border: none;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-premium::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+        
+        .btn-premium:hover::before {
+            left: 100%;
+        }
+        
+        .btn-premium:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 35px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-register {
+            background: linear-gradient(45deg, #f093fb, #f5576c);
+        }
+        
+        .btn-register:hover {
+            box-shadow: 0 15px 35px rgba(240, 147, 251, 0.4);
+        }
+        
+        /* Input focus effects */
+        .input-premium {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .input-premium:focus {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: #f093fb;
+            box-shadow: 0 0 20px rgba(240, 147, 251, 0.3);
+            transform: translateY(-1px);
+        }
+        
+        /* Particles container */
+        #particles-js {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+        
+        .content-overlay {
+            position: relative;
+            z-index: 10;
+        }
+        
+        /* Logo glow effect */
+        .logo-glow {
+            filter: drop-shadow(0 0 20px rgba(240, 147, 251, 0.6));
+            animation: pulse-glow 4s ease-in-out infinite alternate;
+        }
+        
+        @keyframes pulse-glow {
+            from { filter: drop-shadow(0 0 20px rgba(240, 147, 251, 0.6)); }
+            to { filter: drop-shadow(0 0 35px rgba(245, 87, 108, 0.8)); }
+        }
+        
+        /* Card entrance animation */
+        .card-entrance {
+            animation: cardSlideUp 1s ease-out;
+        }
+        
+        @keyframes cardSlideUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+        
+        /* Success checkmarks */
+        .feature-check {
+            animation: checkPop 0.5s ease-out;
+        }
+        
+        @keyframes checkPop {
+            0% { transform: scale(0); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+    </style>
+</head>
+<body class="min-h-screen gradient-bg overflow-x-hidden">
+    
+    <!-- Particles Background -->
+    <div id="particles-js"></div>
+    
+    <!-- Floating Math Symbols -->
+    <div class="absolute inset-0 overflow-hidden pointer-events-none z-2">
+        <div class="absolute top-20 left-[3%] text-8xl text-white/10 math-float">∇</div>
+        <div class="absolute top-40 right-[5%] text-6xl text-white/10 math-spiral">α</div>
+        <div class="absolute bottom-40 left-[10%] text-7xl text-white/10 math-float-reverse">β</div>
+        <div class="absolute top-60 left-[80%] text-5xl text-white/10 math-float">∂</div>
+        <div class="absolute bottom-20 right-[15%] text-8xl text-white/10 math-spiral">γ</div>
+        <div class="absolute top-32 left-[40%] text-6xl text-white/10 math-float-reverse">θ</div>
+        <div class="absolute bottom-60 left-[70%] text-5xl text-white/10 math-float">Φ</div>
+        <div class="absolute top-80 right-[40%] text-4xl text-white/10 math-spiral">ψ</div>
+        <div class="absolute bottom-80 left-[25%] text-6xl text-white/10 math-float-reverse">Σ</div>
+        <div class="absolute top-96 left-[85%] text-7xl text-white/10 math-float">Ω</div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="content-overlay min-h-screen flex items-center justify-center p-4 py-12">
+        <div class="w-full max-w-7xl mx-auto">
+            <div class="grid lg:grid-cols-5 gap-8 items-center">
+                
+                <!-- Left Side - Branding & Features -->
+                <div class="lg:col-span-2 text-center lg:text-left space-y-8" data-aos="fade-right" data-aos-duration="1000">
+                    
+                    <!-- Logo & Title -->
+                    <div class="space-y-6">
+                        <div class="logo-glow text-7xl lg:text-8xl">🚀</div>
+                        <div>
+                            <h1 class="text-5xl lg:text-6xl font-black mb-4">
+                                <span class="bg-gradient-to-r from-pink-400 via-purple-500 to-blue-500 bg-clip-text text-transparent">
+                                    Únete a SolverANS
+                                </span>
+                            </h1>
+                            <p class="text-lg lg:text-xl text-white/80 font-light leading-relaxed">
+                                Accede a la plataforma más avanzada de cálculo matemático profesional
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Features List -->
+                    <div class="space-y-4">
+                        <div class="flex items-center space-x-4 glass p-4 rounded-xl hover:scale-105 transition-all duration-300">
+                            <div class="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center feature-check">
+                                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                </svg>
+                            </div>
+                            <div>
+                                <h3 class="text-white font-semibold">Cálculos Ilimitados</h3>
+                                <p class="text-white/60 text-sm">Resuelve todos los problemas que necesites</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-center space-x-4 glass p-4 rounded-xl hover:scale-105 transition-all duration-300">
+                            <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center feature-check">
+                                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                                </svg>
+                            </div>
+                            <div>
+                                <h3 class="text-white font-semibold">Historial Completo</h3>
+                                <p class="text-white/60 text-sm">Guarda y revisa todos tus cálculos</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-center space-x-4 glass p-4 rounded-xl hover:scale-105 transition-all duration-300">
+                            <div class="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center feature-check">
+                                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                </svg>
+                            </div>
+                            <div>
+                                <h3 class="text-white font-semibold">Velocidad Extrema</h3>
+                                <p class="text-white/60 text-sm">Resultados en menos de 1 segundo</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-center space-x-4 glass p-4 rounded-xl hover:scale-105 transition-all duration-300">
+                            <div class="w-8 h-8 bg-pink-500 rounded-full flex items-center justify-center feature-check">
+                                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                                </svg>
+                            </div>
+                            <div>
+                                <h3 class="text-white font-semibold">Interfaz Intuitiva</h3>
+                                <p class="text-white/60 text-sm">Diseño moderno y fácil de usar</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Stats Counter -->
+                    <div class="grid grid-cols-3 gap-6 mt-8">
+                        <div class="text-center">
+                            <div class="text-2xl font-black text-pink-400">1000+</div>
+                            <div class="text-white/60 text-xs">Usuarios Activos</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-2xl font-black text-purple-400">99.9%</div>
+                            <div class="text-white/60 text-xs">Precisión</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-2xl font-black text-blue-400">∞</div>
+                            <div class="text-white/60 text-xs">Posibilidades</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Side - Register Form -->
+                <div class="lg:col-span-3 w-full max-w-2xl mx-auto" data-aos="fade-left" data-aos-duration="1000" data-aos-delay="300">
+                    
+                    <!-- Register Card -->
+                    <div class="glass-dark rounded-3xl p-8 shadow-2xl card-entrance">
+                        
+                        <!-- Card Header -->
+                        <div class="text-center mb-8">
+                            <div class="w-16 h-16 bg-gradient-to-r from-pink-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+                                <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                                </svg>
+                            </div>
+                            <h2 class="text-3xl font-bold text-white mb-2">Crear Cuenta</h2>
+                            <p class="text-white/60">Completa tus datos para comenzar</p>
+                        </div>
+
+                        <!-- Error Messages -->
+                        {% if form.errors %}
+                            <div class="bg-red-500/20 border border-red-500/30 rounded-xl p-4 mb-6 backdrop-blur-sm" data-aos="shake">
+                                <div class="flex items-start space-x-3">
+                                    <svg class="w-5 h-5 text-red-400 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    <div>
+                                        <h4 class="text-red-300 font-medium mb-1">Por favor corrige los siguientes errores:</h4>
+                                        <ul class="text-red-300 text-sm space-y-1">
+                                            {% for field, errors in form.errors.items %}
+                                                {% for error in errors %}
+                                                    <li>• {{ error }}</li>
+                                                {% endfor %}
+                                            {% endfor %}
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+
+                        <!-- Register Form -->
+                        <form method="post" enctype="multipart/form-data" class="space-y-6" id="registerForm">
+                            {% csrf_token %}
+                            
+                            <!-- Username Field -->
+                            <div class="space-y-2">
+                                <label class="text-white/80 text-sm font-medium flex items-center space-x-2">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                    </svg>
+                                    <span>Nombre de Usuario</span>
+                                </label>
+                                {{ form.username }}
+                            </div>
+
+                            <!-- Email Field -->
+                            <div class="space-y-2">
+                                <label class="text-white/80 text-sm font-medium flex items-center space-x-2">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                    </svg>
+                                    <span>Correo Electrónico</span>
+                                </label>
+                                {{ form.email }}
+                            </div>
+
+                            <!-- Full Name Field -->
+                            <div class="space-y-2">
+                                <label class="text-white/80 text-sm font-medium flex items-center space-x-2">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2" />
+                                    </svg>
+                                    <span>Nombre Completo</span>
+                                </label>
+                                {{ form.nombre_completo }}
+                            </div>
+
+                            <!-- Grid for Career and Carnet -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="space-y-2">
+                                    <label class="text-white/80 text-sm font-medium flex items-center space-x-2">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                                        </svg>
+                                        <span>Carrera</span>
+                                    </label>
+                                    {{ form.carrera }}
+                                </div>
+                                
+                                <div class="space-y-2">
+                                    <label class="text-white/80 text-sm font-medium flex items-center space-x-2">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                                        </svg>
+                                        <span>Carnet</span>
+                                    </label>
+                                    {{ form.carnet }}
+                                </div>
+                            </div>
+
+                            <!-- Cycle Field -->
+                            <div class="space-y-2">
+                                <label class="text-white/80 text-sm font-medium flex items-center space-x-2">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                    </svg>
+                                    <span>Ciclo Académico</span>
+                                </label>
+                                {{ form.ciclo }}
+                            </div>
+
+                            <!-- Photo Field -->
+                            <div class="space-y-2">
+                                <label class="text-white/80 text-sm font-medium flex items-center space-x-2">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    </svg>
+                                    <span>Foto de Perfil (Opcional)</span>
+                                </label>
+                                {{ form.foto }}
+                            </div>
+
+                            <!-- Password Fields -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="space-y-2">
+                                    <label class="text-white/80 text-sm font-medium flex items-center space-x-2">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                        </svg>
+                                        <span>Contraseña</span>
+                                    </label>
+                                    {{ form.password1 }}
+                                </div>
+                                
+                                <div class="space-y-2">
+                                    <label class="text-white/80 text-sm font-medium flex items-center space-x-2">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                        <span>Confirmar Contraseña</span>
+                                    </label>
+                                    {{ form.password2 }}
+                                </div>
+                            </div>
+
+                            <!-- Register Button -->
+                            <button type="submit" class="w-full btn-premium btn-register text-white font-semibold py-3 px-6 rounded-xl text-lg shadow-lg mt-8" id="registerBtn">
+                                <span class="flex items-center justify-center space-x-2">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                                    </svg>
+                                    <span class="btn-text">Crear Mi Cuenta</span>
+                                    <div class="loading loading-spinner loading-sm hidden"></div>
+                                </span>
+                            </button>
+                        </form>
+
+                        <!-- Login Link -->
+                        <div class="text-center mt-6">
+                            <p class="text-white/60 text-sm mb-3">¿Ya tienes una cuenta?</p>
+                            <a href="{% url 'login' %}" class="text-pink-400 hover:text-pink-300 font-medium transition-colors duration-300 flex items-center justify-center space-x-1">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+                                </svg>
+                                <span>Iniciar sesión aquí</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize AOS
+        AOS.init({
+            duration: 1200,
+            easing: 'ease-out-cubic',
+            once: true
+        });
+
+        // Initialize Particles
+        particlesJS('particles-js', {
+            particles: {
+                number: { value: 60, density: { enable: true, value_area: 800 } },
+                color: { value: ["#f093fb", "#f5576c", "#4facfe", "#00f2fe", "#43e97b", "#38f9d7"] },
+                shape: { type: "circle" },
+                opacity: { value: 0.15, random: true, anim: { enable: true, speed: 1, opacity_min: 0.05 } },
+                size: { value: 4, random: true, anim: { enable: true, speed: 2, size_min: 1 } },
+                line_linked: { enable: true, distance: 150, color: "#ffffff", opacity: 0.1, width: 1 },
+                move: { enable: true, speed: 1.5, direction: "none", random: true, straight: false, out_mode: "out", bounce: false }
+            },
+            interactivity: {
+                detect_on: "canvas",
+                events: { onhover: { enable: true, mode: "bubble" }, onclick: { enable: true, mode: "push" } },
+                modes: { 
+                    bubble: { distance: 250, size: 8, duration: 2, opacity: 0.8, speed: 3 }, 
+                    push: { particles_nb: 3 }
+                }
+            },
+            retina_detect: true
+        });
+
+        // Form handling
+        document.getElementById('registerForm').addEventListener('submit', function(e) {
+            const btn = document.getElementById('registerBtn');
+            const btnText = btn.querySelector('.btn-text');
+            const spinner = btn.querySelector('.loading');
+            
+            btnText.textContent = 'Creando cuenta...';
+            spinner.classList.remove('hidden');
+            btn.disabled = true;
+        });
+
+        // Add premium styling to form fields
+        document.addEventListener('DOMContentLoaded', function() {
+            const inputs = document.querySelectorAll('input, select, textarea');
+            inputs.forEach(input => {
+                input.classList.add('input-premium', 'w-full', 'px-4', 'py-3', 'rounded-xl', 'text-white', 'placeholder-white/40', 'focus:outline-none');
+                if (input.type === 'file') {
+                    input.classList.add('file:mr-4', 'file:py-2', 'file:px-4', 'file:rounded-lg', 'file:border-0', 'file:text-sm', 'file:font-semibold', 'file:bg-pink-500', 'file:text-white', 'hover:file:bg-pink-600');
+                }
+            });
+        });
+
+        // Auto-focus first input
+        setTimeout(() => {
+            document.querySelector('input[name="username"]').focus();
+        }, 500);
+    </script>
+</body>
+</html>

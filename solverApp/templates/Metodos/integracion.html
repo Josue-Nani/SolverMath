@@ -1,0 +1,497 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Integración Numérica | SolverANS{% endblock %}
+
+{% block content %}
+
+  <!-- Fondo animado -->
+  <div class="fixed inset-0 -z-10 overflow-hidden">
+    <div class="absolute inset-0 bg-gradient-to-br from-slate-900 via-black to-blue-900"></div>
+    <div class="absolute top-0 left-0 w-48 h-48 md:w-72 md:h-72 bg-blue-500/20 rounded-full blur-2xl opacity-60 animate-pulse"></div>
+    <div class="absolute top-0 right-0 w-48 h-48 md:w-72 md:h-72 bg-cyan-500/20 rounded-full blur-2xl opacity-60 animate-pulse delay-1000"></div>
+    <div class="absolute bottom-0 left-10 w-48 h-48 md:w-72 md:h-72 bg-indigo-500/20 rounded-full blur-2xl opacity-60 animate-pulse delay-500"></div>
+    <div class="absolute inset-0 opacity-10">
+      <div class="absolute top-10 left-4 text-3xl md:top-20 md:left-20 md:text-6xl font-mono text-white animate-pulse select-none">∫</div>
+      <div class="absolute top-32 right-4 text-4xl md:top-40 md:right-32 md:text-8xl font-mono text-white animate-pulse delay-1000 select-none">f(x)</div>
+      <div class="absolute bottom-24 left-10 text-4xl md:bottom-40 md:left-40 md:text-7xl font-mono text-white animate-pulse delay-500 select-none">dx</div>
+    </div>
+    <div class="absolute inset-0 opacity-5">
+      <div class="h-full w-full bg-[linear-gradient(to_right,#06b6d412_1px,transparent_1px),linear-gradient(to_bottom,#06b6d412_1px,transparent_1px)] bg-[size:40px_40px]"></div>
+    </div>
+    <div class="absolute inset-0 opacity-5">
+      <div class="absolute top-1/4 left-0 w-full h-px bg-gradient-to-r from-transparent via-blue-500 to-transparent"></div>
+      <div class="absolute top-2/4 left-0 w-full h-px bg-gradient-to-r from-transparent via-cyan-500 to-transparent"></div>
+      <div class="absolute top-3/4 left-0 w-full h-px bg-gradient-to-r from-transparent via-indigo-500 to-transparent"></div>
+    </div>
+  </div>
+
+  <!-- Contenido principal -->
+  <div class="min-h-screen py-8 px-4">
+    <div class="max-w-6xl mx-auto space-y-8">
+      
+      <!-- Encabezado -->
+      <div class="text-center" data-aos="fade-down">
+        <h1 class="text-4xl lg:text-5xl font-bold bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent mb-4">
+          Integración Numérica
+        </h1>
+        <p class="text-gray-300 text-lg max-w-2xl mx-auto">
+          Calcula integrales definidas usando métodos de cuadratura numérica
+        </p>
+      </div>
+
+      <!-- Formulario principal -->
+      <div class="grid lg:grid-cols-3 gap-8">
+        
+        <!-- Card del formulario -->
+        <div class="lg:col-span-2" data-aos="fade-right">
+          <div class="card bg-base-100/10 backdrop-blur-lg border border-cyan-500/20 shadow-xl">
+            <div class="card-body">
+              <h2 class="card-title text-cyan-300 mb-6">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                </svg>
+                Parámetros de integración
+              </h2>
+              
+              <form method="POST" onsubmit="return validarFormulario()" class="space-y-6">
+                {% csrf_token %}
+
+                <!-- Método de integración -->
+                <div class="form-control">
+                  <label class="label">
+                    <span class="label-text text-cyan-200 font-semibold">Método de cuadratura</span>
+                  </label>
+                  <select name="metodos_integracion" class="select select-bordered border-cyan-500/50 bg-base-100/20 text-white focus:border-cyan-400">
+                    <option value="1" {% if datos_precargados and datos_precargados.metodo == 1 %}selected{% endif %}>Regla del Trapecio</option>
+                    <option value="2" {% if datos_precargados and datos_precargados.metodo == 2 %}selected{% endif %}>Regla de Simpson 1/3</option>
+                    <option value="3" {% if datos_precargados and datos_precargados.metodo == 3 %}selected{% endif %}>Regla de Simpson 3/8</option>
+                  </select>
+                </div>
+
+                <!-- Función -->
+                <div class="form-control">
+                  <label class="label">
+                    <span class="label-text text-cyan-200 font-semibold flex items-center gap-2">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-9a2 2 0 00-2-2h-2M7 21V5a2 2 0 012-2h2"/>
+                      </svg>
+                      Función f(x)
+                    </span>
+                    <span class="label-text-alt text-cyan-400">Sintaxis matemática estándar</span>
+                  </label>
+                  <math-field id="math-input" virtual-keyboard-mode="onfocus" 
+                    class="input input-bordered border-cyan-500/50 bg-base-100/20 text-white focus:border-cyan-400 h-16 text-lg">
+                  </math-field>
+                  <input type="hidden" name="funcion" id="funcion" required>
+                  
+                  <!-- Ejemplos rápidos -->
+                  <div class="flex flex-wrap gap-2 mt-3">
+                    <div class="badge badge-outline badge-sm cursor-pointer hover:badge-primary transition-colors" onclick="setExample('x^2')">x²</div>
+                    <div class="badge badge-outline badge-sm cursor-pointer hover:badge-primary transition-colors" onclick="setExample('sin(x)')">sin(x)</div>
+                    <div class="badge badge-outline badge-sm cursor-pointer hover:badge-primary transition-colors" onclick="setExample('exp(x)')">e^x</div>
+                    <div class="badge badge-outline badge-sm cursor-pointer hover:badge-primary transition-colors" onclick="setExample('1/x')">1/x</div>
+                    <div class="badge badge-outline badge-sm cursor-pointer hover:badge-primary transition-colors" onclick="setExample('sqrt(x)')">√x</div>
+                  </div>
+                </div>
+
+                <!-- Límites de integración -->
+                <div class="grid grid-cols-2 gap-4">
+                  <div class="form-control">
+                    <label class="label">
+                      <span class="label-text text-cyan-200 font-semibold">Límite inferior (a)</span>
+                    </label>
+                    <input type="number" name="input_limiteIzquierdo" step="any" required
+                      class="input input-bordered border-cyan-500/50 bg-base-100/20 text-white focus:border-cyan-400" 
+                      placeholder="0"
+                      value="{% if datos_precargados %}{{ datos_precargados.a }}{% endif %}">
+                  </div>
+                  <div class="form-control">
+                    <label class="label">
+                      <span class="label-text text-cyan-200 font-semibold">Límite superior (b)</span>
+                    </label>
+                    <input type="number" name="input_limiteDerecho" step="any" required
+                      class="input input-bordered border-cyan-500/50 bg-base-100/20 text-white focus:border-cyan-400" 
+                      placeholder="1"
+                      value="{% if datos_precargados %}{{ datos_precargados.b }}{% endif %}">
+                  </div>
+                </div>
+
+                <!-- Número de intervalos -->
+                <div class="form-control">
+                  <label class="label">
+                    <span class="label-text text-cyan-200 font-semibold">Número de intervalos (n)</span>
+                    <span class="label-text-alt text-cyan-400">Debe ser par para Simpson</span>
+                  </label>
+                  <input type="number" name="input_intervalos" min="1" step="1" required
+                    class="input input-bordered border-cyan-500/50 bg-base-100/20 text-white focus:border-cyan-400" 
+                    placeholder="10"
+                    value="{% if datos_precargados %}{{ datos_precargados.n }}{% endif %}">
+                </div>
+
+                <!-- Botón de cálculo -->
+                <div class="form-control mt-8">
+                  <button type="submit" class="btn btn-primary bg-gradient-to-r from-cyan-500 to-blue-600 border-0 hover:from-cyan-600 hover:to-blue-700 text-white">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                    </svg>
+                    Calcular Integral
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card de información -->
+        <div class="lg:col-span-1" data-aos="fade-left">
+          <div class="card bg-base-100/10 backdrop-blur-lg border border-cyan-500/20 shadow-xl">
+            <div class="card-body">
+              <h3 class="card-title text-cyan-300 text-lg">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                Información
+              </h3>
+              
+              <div class="space-y-4 text-sm text-gray-300">
+                <div class="alert alert-info bg-blue-500/20 border-blue-500/30">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                  </svg>
+                  <span class="text-blue-200">La integración numérica aproxima el área bajo la curva</span>
+                </div>
+
+                <div class="space-y-3">
+                  <div>
+                    <h4 class="font-semibold text-cyan-300 mb-2">Métodos disponibles:</h4>
+                    <ul class="space-y-1 text-xs">
+                      <li class="flex items-center gap-2">
+                        <div class="w-2 h-2 bg-cyan-400 rounded-full"></div>
+                        <span><strong>Trapecio:</strong> Aproximación lineal</span>
+                      </li>
+                      <li class="flex items-center gap-2">
+                        <div class="w-2 h-2 bg-blue-400 rounded-full"></div>
+                        <span><strong>Simpson 1/3:</strong> Aproximación parabólica</span>
+                      </li>
+                      <li class="flex items-center gap-2">
+                        <div class="w-2 h-2 bg-indigo-400 rounded-full"></div>
+                        <span><strong>Simpson 3/8:</strong> Aproximación cúbica</span>
+                      </li>
+                    </ul>
+                  </div>
+
+                  <div>
+                    <h4 class="font-semibold text-cyan-300 mb-2">Funciones soportadas:</h4>
+                    <div class="flex flex-wrap gap-1">
+                      <span class="badge badge-xs badge-outline">sin, cos, tan</span>
+                      <span class="badge badge-xs badge-outline">exp, log, ln</span>
+                      <span class="badge badge-xs badge-outline">sqrt, abs</span>
+                      <span class="badge badge-xs badge-outline">x^n, e, pi</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Resultados -->
+      {% if resultadoIntegral or error %}
+        <div data-aos="fade-up">
+          <div class="card bg-base-100/10 backdrop-blur-lg border border-cyan-500/20 shadow-xl">
+            <div class="card-body">
+              <h3 class="card-title text-cyan-300">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                </svg>
+                Resultado
+              </h3>
+              
+              {% if resultadoIntegral %}
+                <div class="alert alert-success bg-green-500/20 border-green-500/30">
+                  <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                  </svg>
+                  <div>
+                    <h4 class="font-bold text-green-200">Integral calculada exitosamente</h4>
+                    <div class="text-2xl font-mono text-green-100 mt-2">
+                      ∫ f(x) dx ≈ <span class="text-green-300">{{ resultadoIntegral }}</span>
+                    </div>
+                  </div>
+                </div>
+              {% endif %}
+
+              {% if error %}
+                <div class="alert alert-error bg-red-500/20 border-red-500/30">
+                  <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                  </svg>
+                  <div>
+                    <h4 class="font-bold text-red-200">Error en el cálculo</h4>
+                    <div class="text-red-100">{{ error }}</div>
+                  </div>
+                </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      {% endif %}
+
+      <!-- Procedimiento paso a paso -->
+      {% if procedimiento and request.user.username != "invitado" %}
+        <div data-aos="fade-up" data-aos-delay="100">
+          <div class="card bg-base-100/10 backdrop-blur-lg border border-cyan-500/20 shadow-xl">
+            <div class="card-body">
+              <h3 class="card-title text-cyan-300">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                </svg>
+                Procedimiento paso a paso
+              </h3>
+              
+              <div class="bg-base-200/20 rounded-lg p-4 overflow-x-auto">
+                <ol class="list-decimal list-inside space-y-3 text-gray-200">
+                  {% for paso in procedimiento %}
+                    <li class="border-l-2 border-cyan-500/30 pl-4 py-2">
+                      <div class="math-formula-highlight font-mono text-sm">$$ {{ paso|safe }} $$</div>
+                    </li>
+                  {% endfor %}
+                </ol>
+              </div>
+            </div>
+          </div>
+        </div>
+      {% elif request.user.username == "invitado" and procedimiento %}
+        <div data-aos="fade-up" data-aos-delay="100">
+          <div class="card bg-base-100/10 backdrop-blur-lg border border-orange-500/20 shadow-xl">
+            <div class="card-body">
+              <div class="alert alert-warning bg-orange-500/20 border-orange-500/30">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+                </svg>
+                <div>
+                  <h4 class="font-bold text-orange-200">Procedimiento disponible solo para usuarios registrados</h4>
+                  <div class="text-orange-100">Inicia sesión con una cuenta registrada para ver el procedimiento detallado.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      {% endif %}
+
+      <!-- Gráfica -->
+      {% if grafica and request.user.username != "invitado" %}
+        <div data-aos="fade-up" data-aos-delay="200">
+          <div class="card bg-base-100/10 backdrop-blur-lg border border-cyan-500/20 shadow-xl">
+            <div class="card-body">
+              <h3 class="card-title text-cyan-300">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"/>
+                </svg>
+                Visualización gráfica
+              </h3>
+              
+              <div class="flex justify-center">
+                <img src="data:image/png;base64,{{ grafica }}" 
+                     alt="Gráfica de la función y área bajo la curva" 
+                     class="max-w-full h-auto rounded-lg border border-cyan-500/30">
+              </div>
+            </div>
+          </div>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <script>
+    // Referencias a elementos del DOM
+    const mathInput = document.getElementById("math-input");
+    const funcionInput = document.getElementById("funcion");
+
+    // Función para convertir expresión matemática a sintaxis de Python
+    function convertirAMathPython(expresion) {
+      return expresion
+        .replace(/\^/g, "**")
+        .replace(/([0-9a-zA-Z])\s*([a-zA-Z])/g, "$1*$2")
+        .replace(/×/g, "*")
+        .replace(/÷/g, "/")
+        .replace(/ln\(/g, "log(")
+        .replace(/e\^\(?([^)]+)\)?/gi, "exp($1)")
+        .replace(/sqrt\(/g, "sqrt(")
+        .replace(/π/g, "pi")
+        .replace(/∞/g, "inf");
+    }
+
+    // Función para establecer ejemplos
+    function setExample(formula) {
+      if (mathInput) {
+        mathInput.setValue(formula);
+        // Agregar pequeña animación
+        mathInput.style.transform = 'scale(1.02)';
+        setTimeout(() => {
+          mathInput.style.transform = 'scale(1)';
+        }, 150);
+        
+        // Mostrar notificación
+        showNotification(`Función ${formula} establecida`, 'success');
+      }
+    }
+
+    // Función de validación del formulario
+    function validarFormulario() {
+      try {
+        const expresionOriginal = mathInput.getValue("ascii-math").trim();
+        
+        if (!expresionOriginal || expresionOriginal.length < 1) {
+          showNotification("Por favor, ingresa una función válida", 'error');
+          mathInput.focus();
+          return false;
+        }
+
+        const convertido = convertirAMathPython(expresionOriginal);
+        funcionInput.value = convertido;
+
+        // Validar límites
+        const limiteInferior = parseFloat(document.querySelector('input[name="input_limiteIzquierdo"]').value);
+        const limiteSuperior = parseFloat(document.querySelector('input[name="input_limiteDerecho"]').value);
+        
+        if (isNaN(limiteInferior) || isNaN(limiteSuperior)) {
+          showNotification("Los límites de integración deben ser números válidos", 'error');
+          return false;
+        }
+        
+        if (limiteInferior >= limiteSuperior) {
+          showNotification("El límite inferior debe ser menor que el superior", 'error');
+          return false;
+        }
+
+        // Validar número de intervalos
+        const intervalos = parseInt(document.querySelector('input[name="input_intervalos"]').value);
+        if (isNaN(intervalos) || intervalos < 1) {
+          showNotification("El número de intervalos debe ser un entero positivo", 'error');
+          return false;
+        }
+
+        showNotification("Calculando integral...", 'info');
+        return true;
+
+      } catch (error) {
+        console.error('Error en validación:', error);
+        showNotification("Error en la validación del formulario", 'error');
+        return false;
+      }
+    }
+
+    // Función para mostrar notificaciones
+    function showNotification(message, type = 'info') {
+      // Crear elemento de notificación
+      const notification = document.createElement('div');
+      notification.className = `alert alert-${type} fixed top-20 right-4 z-50 max-w-sm shadow-lg`;
+      
+      const icon = type === 'success' ? '✓' : type === 'error' ? '✗' : 'ℹ';
+      notification.innerHTML = `
+        <span>${icon}</span>
+        <span>${message}</span>
+      `;
+      
+      document.body.appendChild(notification);
+      
+      // Animar entrada
+      notification.style.transform = 'translateX(100%)';
+      setTimeout(() => {
+        notification.style.transform = 'translateX(0)';
+        notification.style.transition = 'transform 0.3s ease-out';
+      }, 10);
+      
+      // Remover después de 3 segundos
+      setTimeout(() => {
+        notification.style.transform = 'translateX(100%)';
+        setTimeout(() => {
+          if (notification.parentNode) {
+            notification.parentNode.removeChild(notification);
+          }
+        }, 300);
+      }, 3000);
+    }
+
+    // Inicialización cuando se carga la página
+    document.addEventListener('DOMContentLoaded', function() {
+      {% if datos_precargados %}
+        // Mostrar notificación de precarga
+        showNotification('✅ Datos cargados desde el historial', 'success');
+        
+        // Precargar función en el math-field
+        const mathInput = document.getElementById('math-input');
+        const funcionHidden = document.getElementById('funcion');
+        
+        if (mathInput && funcionHidden) {
+          // Dar tiempo al math-field para inicializarse
+          setTimeout(() => {
+            const funcionValue = '{{ datos_precargados.funcion|escapejs }}';
+            mathInput.value = funcionValue;
+            funcionHidden.value = funcionValue;
+            
+            // Forzar actualización visual del math-field
+            if (mathInput.setValue) {
+              mathInput.setValue(funcionValue);
+            }
+            
+            console.log('Función precargada:', funcionValue);
+          }, 100);
+        }
+        
+        // Validar que los campos numéricos tengan valores
+        setTimeout(() => {
+          const camposNumericos = [
+            { elemento: document.querySelector('select[name="metodos_integracion"]'), nombre: 'método', valor: '{{ datos_precargados.metodo }}' },
+            { elemento: document.querySelector('input[name="input_limiteIzquierdo"]'), nombre: 'límite a', valor: '{{ datos_precargados.a }}' },
+            { elemento: document.querySelector('input[name="input_limiteDerecho"]'), nombre: 'límite b', valor: '{{ datos_precargados.b }}' },
+            { elemento: document.querySelector('input[name="input_intervalos"]'), nombre: 'intervalos n', valor: '{{ datos_precargados.n }}' }
+          ];
+          
+          let camposPrecargados = [];
+          
+          camposNumericos.forEach(({ elemento, nombre, valor }) => {
+            if (elemento && valor && valor !== '') {
+              if (elemento.tagName === 'SELECT') {
+                elemento.value = valor;
+              } else {
+                elemento.value = valor;
+              }
+              elemento.classList.add('ring-2', 'ring-success', 'ring-opacity-50');
+              camposPrecargados.push(nombre);
+              
+              // Quitar el resaltado después de 3 segundos
+              setTimeout(() => {
+                elemento.classList.remove('ring-2', 'ring-success', 'ring-opacity-50');
+              }, 3000);
+            }
+          });
+          
+          // También resaltar el math-field si tiene valor
+          if (mathInput && mathInput.value) {
+            mathInput.style.border = '2px solid oklch(var(--su))';
+            setTimeout(() => {
+              mathInput.style.border = '';
+            }, 3000);
+          }
+          
+          if (camposPrecargados.length > 0) {
+            console.log('Campos precargados:', camposPrecargados);
+          }
+        }, 200);
+      {% else %}
+        // Mostrar mensaje de bienvenida solo si no hay datos precargados
+        showNotification("Calculadora de integración numérica lista", 'success');
+      {% endif %}
+      
+      // Configurar MathJax para renderizar las fórmulas
+      if (typeof MathJax !== 'undefined') {
+        MathJax.typesetPromise();
+      }
+    });
+  </script>
+
+{% endblock %}

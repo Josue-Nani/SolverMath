@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iniciar Sesión | SolverANS - Premium</title>
+    
+    <!-- Tailwind CSS + DaisyUI -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/full.min.css" rel="stylesheet" type="text/css" />
+    
+    <!-- AOS Animation Library -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    
+    <!-- Particle.js -->
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+    
+    <!-- Custom CSS -->
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+        
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        /* Glassmorphism */
+        .glass {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .glass-dark {
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        /* Gradientes animados */
+        .gradient-bg {
+            background: linear-gradient(-45deg, #667eea, #764ba2, #f093fb, #f5576c, #4facfe, #00f2fe);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+        }
+        
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        /* Partículas flotantes */
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); opacity: 0.7; }
+            33% { transform: translateY(-30px) rotate(5deg); opacity: 1; }
+            66% { transform: translateY(-15px) rotate(-3deg); opacity: 0.8; }
+        }
+        
+        @keyframes float-reverse {
+            0%, 100% { transform: translateY(0px) rotate(0deg); opacity: 0.6; }
+            50% { transform: translateY(-25px) rotate(-5deg); opacity: 1; }
+        }
+        
+        .math-float {
+            animation: float 8s ease-in-out infinite;
+        }
+        
+        .math-float-reverse {
+            animation: float-reverse 10s ease-in-out infinite;
+        }
+        
+        /* Efectos hover premium */
+        .btn-premium {
+            position: relative;
+            overflow: hidden;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            border: none;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-premium::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+        
+        .btn-premium:hover::before {
+            left: 100%;
+        }
+        
+        .btn-premium:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 35px rgba(102, 126, 234, 0.4);
+        }
+        
+        /* Input focus effects */
+        .input-premium {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .input-premium:focus {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: #667eea;
+            box-shadow: 0 0 20px rgba(102, 126, 234, 0.3);
+            transform: translateY(-1px);
+        }
+        
+        /* Particles container */
+        #particles-js {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+        
+        .content-overlay {
+            position: relative;
+            z-index: 10;
+        }
+        
+        /* Logo glow effect */
+        .logo-glow {
+            filter: drop-shadow(0 0 20px rgba(102, 126, 234, 0.6));
+            animation: pulse-glow 3s ease-in-out infinite alternate;
+        }
+        
+        @keyframes pulse-glow {
+            from { filter: drop-shadow(0 0 20px rgba(102, 126, 234, 0.6)); }
+            to { filter: drop-shadow(0 0 30px rgba(118, 75, 162, 0.8)); }
+        }
+        
+        /* Card entrance animation */
+        .card-entrance {
+            animation: cardSlideUp 0.8s ease-out;
+        }
+        
+        @keyframes cardSlideUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+    </style>
+</head>
+<body class="min-h-screen gradient-bg overflow-hidden">
+    
+    <!-- Particles Background -->
+    <div id="particles-js"></div>
+    
+    <!-- Floating Math Symbols -->
+    <div class="absolute inset-0 overflow-hidden pointer-events-none z-2">
+        <div class="absolute top-20 left-[5%] text-9xl text-white/10 math-float">∫</div>
+        <div class="absolute top-32 right-[8%] text-7xl text-white/10 math-float-reverse">π</div>
+        <div class="absolute bottom-40 left-[15%] text-8xl text-white/10 math-float">∑</div>
+        <div class="absolute top-60 left-[75%] text-6xl text-white/10 math-float-reverse">∆</div>
+        <div class="absolute bottom-20 right-[20%] text-7xl text-white/10 math-float">∞</div>
+        <div class="absolute top-40 left-[45%] text-5xl text-white/10 math-float-reverse">√</div>
+        <div class="absolute bottom-60 left-[60%] text-6xl text-white/10 math-float">Ω</div>
+        <div class="absolute top-80 right-[45%] text-4xl text-white/10 math-float-reverse">θ</div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="content-overlay min-h-screen flex items-center justify-center p-4">
+        <div class="w-full max-w-6xl mx-auto">
+            <div class="grid lg:grid-cols-2 gap-12 items-center">
+                
+                <!-- Left Side - Branding & Info -->
+                <div class="text-center lg:text-left space-y-8" data-aos="fade-right" data-aos-duration="1000">
+                    
+                    <!-- Logo & Title -->
+                    <div class="space-y-6">
+                        <div class="logo-glow text-8xl lg:text-9xl">🧮</div>
+                        <div>
+                            <h1 class="text-6xl lg:text-7xl font-black mb-4">
+                                <span class="bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500 bg-clip-text text-transparent">
+                                    SolverANS
+                                </span>
+                            </h1>
+                            <p class="text-xl lg:text-2xl text-white/80 font-light leading-relaxed">
+                                Plataforma avanzada de cálculo matemático profesional
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Features Grid -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        <div class="glass p-6 rounded-2xl space-y-3 hover:scale-105 transition-all duration-300">
+                            <div class="text-4xl">🎯</div>
+                            <h3 class="text-xl font-bold text-white">Precisión Extrema</h3>
+                            <p class="text-white/70 text-sm">Cálculos con precisión de hasta 15 decimales</p>
+                        </div>
+                        <div class="glass p-6 rounded-2xl space-y-3 hover:scale-105 transition-all duration-300">
+                            <div class="text-4xl">⚡</div>
+                            <h3 class="text-xl font-bold text-white">Ultra Rápido</h3>
+                            <p class="text-white/70 text-sm">Resultados instantáneos en menos de 1 segundo</p>
+                        </div>
+                        <div class="glass p-6 rounded-2xl space-y-3 hover:scale-105 transition-all duration-300">
+                            <div class="text-4xl">📊</div>
+                            <h3 class="text-xl font-bold text-white">Visualización</h3>
+                            <p class="text-white/70 text-sm">Gráficas interactivas y procedimientos detallados</p>
+                        </div>
+                        <div class="glass p-6 rounded-2xl space-y-3 hover:scale-105 transition-all duration-300">
+                            <div class="text-4xl">💾</div>
+                            <h3 class="text-xl font-bold text-white">Historial</h3>
+                            <p class="text-white/70 text-sm">Guarda y reutiliza tus cálculos anteriores</p>
+                        </div>
+                    </div>
+
+                    <!-- Stats -->
+                    <div class="flex justify-center lg:justify-start space-x-8">
+                        <div class="text-center">
+                            <div class="text-3xl font-black text-blue-400">99.9%</div>
+                            <div class="text-white/60 text-sm">Precisión</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-3xl font-black text-purple-400">1000+</div>
+                            <div class="text-white/60 text-sm">Usuarios</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-3xl font-black text-pink-400">24/7</div>
+                            <div class="text-white/60 text-sm">Disponible</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Side - Login Form -->
+                <div class="w-full max-w-md mx-auto" data-aos="fade-left" data-aos-duration="1000" data-aos-delay="200">
+                    
+                    <!-- Login Card -->
+                    <div class="glass-dark rounded-3xl p-8 shadow-2xl card-entrance">
+                        
+                        <!-- Card Header -->
+                        <div class="text-center mb-8">
+                            <div class="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+                                <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+                                </svg>
+                            </div>
+                            <h2 class="text-3xl font-bold text-white mb-2">Bienvenido</h2>
+                            <p class="text-white/60">Ingresa tus credenciales para continuar</p>
+                        </div>
+
+                        <!-- Error Messages -->
+                        {% if messages %}
+                            {% for message in messages %}
+                                <div class="bg-red-500/20 border border-red-500/30 rounded-xl p-4 mb-6 backdrop-blur-sm" data-aos="shake">
+                                    <div class="flex items-center space-x-3">
+                                        <svg class="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                        <span class="text-red-300 text-sm">{{ message }}</span>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+
+                        <!-- Error Messages for Form -->
+                        {% if form.errors %}
+                            <div class="bg-red-500/20 border border-red-500/30 rounded-xl p-4 mb-6 backdrop-blur-sm" data-aos="shake">
+                                <div class="flex items-start space-x-3">
+                                    <svg class="w-5 h-5 text-red-400 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    <div>
+                                        <h4 class="text-red-300 font-medium mb-1">Error de autenticación:</h4>
+                                        <ul class="text-red-300 text-sm space-y-1">
+                                            {% for field, errors in form.errors.items %}
+                                                {% for error in errors %}
+                                                    <li>• {{ error }}</li>
+                                                {% endfor %}
+                                            {% endfor %}
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+
+                        <!-- Login Form -->
+                        <form method="POST" action="{% url 'login' %}" class="space-y-6" id="loginForm" enctype="application/x-www-form-urlencoded">
+                            {% csrf_token %}
+                            
+                            <!-- Username Field -->
+                            <div class="space-y-2">
+                                <label class="text-white/80 text-sm font-medium flex items-center space-x-2">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                    </svg>
+                                    <span>{{ form.username.label }}</span>
+                                </label>
+                                <input type="text" name="username" placeholder="Nombre de usuario" 
+                                       class="w-full px-4 py-3 input-premium rounded-xl text-white placeholder-white/40 focus:outline-none"
+                                       autocomplete="username" required id="id_username">
+                                {% if form.username.errors %}
+                                    <div class="mt-1 text-red-400 text-sm">
+                                        {% for error in form.username.errors %}
+                                            <p>{{ error }}</p>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Password Field -->
+                            <div class="space-y-2">
+                                <label class="text-white/80 text-sm font-medium flex items-center space-x-2">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                    </svg>
+                                    <span>{{ form.password.label }}</span>
+                                </label>
+                                <input type="password" name="password" placeholder="Contraseña" 
+                                       class="w-full px-4 py-3 input-premium rounded-xl text-white placeholder-white/40 focus:outline-none"
+                                       autocomplete="current-password" required id="id_password">
+                                {% if form.password.errors %}
+                                    <div class="mt-1 text-red-400 text-sm">
+                                        {% for error in form.password.errors %}
+                                            <p>{{ error }}</p>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Login Button -->
+                            <button type="submit" class="w-full btn-premium text-white font-semibold py-3 px-6 rounded-xl text-lg shadow-lg" id="loginBtn">
+                                <span class="flex items-center justify-center space-x-2">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+                                    </svg>
+                                    <span class="btn-text">Iniciar Sesión</span>
+                                    <div class="loading loading-spinner loading-sm hidden"></div>
+                                </span>
+                            </button>
+                        </form>
+
+                        <!-- Divider -->
+                        <div class="flex items-center my-6">
+                            <div class="flex-1 border-t border-white/20"></div>
+                            <span class="mx-4 text-white/40 text-sm">O</span>
+                            <div class="flex-1 border-t border-white/20"></div>
+                        </div>
+
+                        <!-- Guest Button -->
+                        <form method="post" action="{% url 'guest_login' %}">
+                            {% csrf_token %}
+                            <button type="submit" class="w-full glass border border-white/20 text-white/80 font-medium py-3 px-6 rounded-xl hover:bg-white/10 transition-all duration-300 flex items-center justify-center space-x-2">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                <span>Continuar como Invitado</span>
+                            </button>
+                        </form>
+
+                        <!-- Register Link -->
+                        <div class="text-center mt-6">
+                            <p class="text-white/60 text-sm mb-3">¿No tienes cuenta?</p>
+                            <a href="{% url 'register' %}" class="text-blue-400 hover:text-blue-300 font-medium transition-colors duration-300 flex items-center justify-center space-x-1">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                                </svg>
+                                <span>Crear cuenta nueva</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize AOS
+        AOS.init({
+            duration: 1000,
+            easing: 'ease-out-cubic',
+            once: true
+        });
+
+        // Initialize Particles
+        particlesJS('particles-js', {
+            particles: {
+                number: { value: 50, density: { enable: true, value_area: 800 } },
+                color: { value: "#ffffff" },
+                shape: { type: "circle" },
+                opacity: { value: 0.1, random: true },
+                size: { value: 3, random: true },
+                line_linked: { enable: true, distance: 150, color: "#ffffff", opacity: 0.1, width: 1 },
+                move: { enable: true, speed: 1, direction: "none", random: false, straight: false, out_mode: "out", bounce: false }
+            },
+            interactivity: {
+                detect_on: "canvas",
+                events: { onhover: { enable: true, mode: "repulse" }, onclick: { enable: true, mode: "push" } },
+                modes: { grab: { distance: 140, line_linked: { opacity: 1 } }, bubble: { distance: 400, size: 40, duration: 2, opacity: 8, speed: 3 }, repulse: { distance: 200, duration: 0.4 }, push: { particles_nb: 4 }, remove: { particles_nb: 2 } }
+            },
+            retina_detect: true
+        });
+
+        // Form handling
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            const btn = document.getElementById('loginBtn');
+            const btnText = btn.querySelector('.btn-text');
+            const spinner = btn.querySelector('.loading');
+            
+            console.log('Form submitted with:', {
+                username: document.getElementById('id_username').value,
+                password: document.getElementById('id_password').value.replace(/./g, '*'),
+                formAction: this.action
+            });
+            
+            btnText.textContent = 'Verificando...';
+            spinner.classList.remove('hidden');
+            
+            // Ensure the form is submitted properly
+            // return true;
+        });
+
+        // Add CSS classes to Django form fields
+        document.addEventListener('DOMContentLoaded', function() {
+            const inputs = document.querySelectorAll('input[type="text"], input[type="password"]');
+            inputs.forEach(input => {
+                input.classList.add('w-full', 'px-4', 'py-3', 'input-premium', 'rounded-xl', 'text-white', 'placeholder-white/40', 'focus:outline-none');
+                if (input.name === 'username') {
+                    input.placeholder = 'Ingresa tu usuario';
+                    input.setAttribute('autocomplete', 'username');
+                } else if (input.name === 'password') {
+                    input.placeholder = 'Ingresa tu contraseña';
+                    input.setAttribute('autocomplete', 'current-password');
+                }
+            });
+        });
+
+        // Auto-focus first input
+        setTimeout(() => {
+            const usernameInput = document.querySelector('input[name="username"]');
+            if (usernameInput) {
+                usernameInput.focus();
+            }
+        }, 500);
+    </script>
+</body>
+</html>

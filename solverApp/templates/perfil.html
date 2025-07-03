@@ -1,0 +1,776 @@
+{% extends 'base.html' %}
+{% load form_filters %}
+{% load static %}
+
+{% block title %}Mi Perfil | SolverANS{% endblock %}
+
+{% block content %}
+
+<!-- Área de notificaciones flotantes -->
+<div id="notificationArea" class="fixed top-20 right-4 z-50 space-y-2"></div>
+
+<!-- Hero Section del Perfil -->
+<div class="hero min-h-[50vh] bg-gradient-to-br from-primary/20 via-accent/10 to-secondary/20 relative overflow-hidden">
+  <!-- Fondo matemático -->
+  <div class="absolute inset-0 opacity-10">
+    <div class="absolute top-20 left-20 text-[15rem] font-mono text-primary animate-pulse">π</div>
+    <div class="absolute bottom-20 right-20 text-[15rem] font-mono text-secondary animate-pulse">∑</div>
+  </div>
+  
+  <div class="hero-content text-center relative z-10">
+    <div class="max-w-3xl" data-aos="fade-up">
+      <div class="text-6xl mb-6">👤</div>
+      <h1 class="text-5xl lg:text-7xl font-black mb-6 leading-tight">
+        <span class="bg-gradient-to-r from-primary via-accent to-secondary bg-clip-text text-transparent">
+          Mi Perfil
+        </span>
+      </h1>
+      <p class="text-xl lg:text-2xl text-base-content/80 max-w-2xl mx-auto leading-relaxed">
+        Gestiona tu información personal y revisa tu historial de cálculos matemáticos
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- Contenido Principal -->
+<div class="container mx-auto px-4 py-16 max-w-7xl">
+  
+  <!-- Información del Usuario -->
+  <section class="mb-16" data-aos="fade-up" data-aos-delay="200">
+    <div class="card bg-gradient-to-br from-base-100 to-base-100/50 shadow-2xl border border-primary/20">
+      
+      <!-- Header de la Card -->
+      <div class="bg-gradient-to-r from-primary/20 to-primary/10 p-6 border-b border-primary/20">
+        <div class="flex items-center gap-4">
+          <div class="p-3 bg-primary/20 rounded-2xl">
+            <svg class="w-8 h-8 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+            </svg>
+          </div>
+          <div>
+            <h2 class="text-3xl font-bold text-primary">Información Personal</h2>
+            <div class="badge badge-primary badge-sm">Perfil de Usuario</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-body p-8">
+        {% if not editando %}
+          <!-- Vista de Solo Lectura -->
+          <div class="flex flex-col lg:flex-row items-start gap-8">
+            
+            <!-- Avatar -->
+            <div class="flex-shrink-0">
+              <div class="avatar">
+                <div class="w-32 h-32 rounded-full ring ring-primary ring-offset-base-100 ring-offset-4 overflow-hidden">
+                  {% if perfil.foto %}
+                    <img src="{{ perfil.foto.url }}" alt="Foto de perfil" class="w-full h-full object-cover" />
+                  {% else %}
+                    <div class="w-full h-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
+                      <span class="text-4xl text-white font-bold">{{ usuario.username|first|upper }}</span>
+                    </div>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+
+            <!-- Información -->
+            <div class="flex-1 w-full">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                
+                <div class="space-y-4">
+                  <div class="bg-gradient-to-r from-primary/10 to-primary/5 p-4 rounded-xl border-l-4 border-primary">
+                    <div class="text-sm text-primary font-medium mb-1">Usuario</div>
+                    <div class="text-lg font-semibold">{{ usuario.username }}</div>
+                  </div>
+                  
+                  <div class="bg-gradient-to-r from-secondary/10 to-secondary/5 p-4 rounded-xl border-l-4 border-secondary">
+                    <div class="text-sm text-secondary font-medium mb-1">Nombre Completo</div>
+                    <div class="text-lg font-semibold">{{ perfil.nombre_completo|default:"No especificado" }}</div>
+                  </div>
+                  
+                  <div class="bg-gradient-to-r from-accent/10 to-accent/5 p-4 rounded-xl border-l-4 border-accent">
+                    <div class="text-sm text-accent font-medium mb-1">Carrera</div>
+                    <div class="text-lg font-semibold">{{ perfil.carrera|default:"No especificada" }}</div>
+                  </div>
+                </div>
+
+                <div class="space-y-4">
+                  <div class="bg-gradient-to-r from-info/10 to-info/5 p-4 rounded-xl border-l-4 border-info">
+                    <div class="text-sm text-info font-medium mb-1">Carnet</div>
+                    <div class="text-lg font-semibold">{{ perfil.carnet|default:"No especificado" }}</div>
+                  </div>
+                  
+                  <div class="bg-gradient-to-r from-success/10 to-success/5 p-4 rounded-xl border-l-4 border-success">
+                    <div class="text-sm text-success font-medium mb-1">Ciclo</div>
+                    <div class="text-lg font-semibold">{{ perfil.ciclo|default:"No especificado" }}</div>
+                  </div>
+                  
+                  <div class="bg-gradient-to-r from-warning/10 to-warning/5 p-4 rounded-xl border-l-4 border-warning">
+                    <div class="text-sm text-warning font-medium mb-1">Fecha de Registro</div>
+                    <div class="text-lg font-semibold">{{ usuario.date_joined|date:"d/m/Y" }}</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Botón Editar -->
+              <div class="mt-8 text-center lg:text-left">
+                <a href="?edit=1" class="btn btn-primary btn-lg shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                  </svg>
+                  Editar Perfil
+                </a>
+              </div>
+            </div>
+          </div>
+
+        {% else %}
+          <!-- Formulario de Edición -->
+          <form method="post" enctype="multipart/form-data" class="space-y-8">
+            {% csrf_token %}
+            
+            <div class="alert alert-info">
+              <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span>Edita solo los campos que desees cambiar. Puedes dejar en blanco los campos que no quieras modificar.</span>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+              {% for field in form %}
+                <div class="form-control{% if field.name == 'foto' %} md:col-span-2{% endif %}">
+                  <label class="label">
+                    <span class="label-text text-lg font-semibold">{{ field.label }}</span>
+                    <span class="label-text-alt text-success">Opcional</span>
+                  </label>
+                  
+                  {% if field.name == 'foto' %}
+                    <div class="flex items-center gap-4">
+                      <div class="avatar">
+                        <div class="w-16 h-16 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2 overflow-hidden">
+                          {% if perfil.foto %}
+                            <img src="{{ perfil.foto.url }}" alt="Foto actual" class="w-full h-full object-cover" />
+                          {% else %}
+                            <div class="w-full h-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
+                              <span class="text-xl text-white font-bold">{{ usuario.username|first|upper }}</span>
+                            </div>
+                          {% endif %}
+                        </div>
+                      </div>
+                      {{ field }}
+                      {% if perfil.foto %}
+                        <div class="text-sm text-info">
+                          <p>Archivo actual: {{ perfil.foto.name|basename }}</p>
+                          <p class="text-xs text-base-content/60">Selecciona un nuevo archivo solo si quieres cambiar la imagen</p>
+                        </div>
+                      {% endif %}
+                    </div>
+                  {% else %}
+                    {{ field }}
+                    {% if field.value %}
+                      <label class="label">
+                        <span class="label-text-alt text-base-content/60">Valor actual: {{ field.value }}</span>
+                      </label>
+                    {% endif %}
+                  {% endif %}
+                  
+                  {% if field.help_text %}
+                    <label class="label">
+                      <span class="label-text-alt text-base-content/60">{{ field.help_text }}</span>
+                    </label>
+                  {% endif %}
+                  
+                  {% for error in field.errors %}
+                    <label class="label">
+                      <span class="label-text-alt text-error">{{ error }}</span>
+                    </label>
+                  {% endfor %}
+                </div>
+              {% endfor %}
+            </div>
+
+            <!-- Botones de Acción -->
+            <div class="flex flex-col sm:flex-row gap-4 justify-end pt-6 border-t border-primary/20">
+              <button type="submit" class="btn btn-success btn-lg shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                </svg>
+                Guardar Cambios
+              </button>
+              <a href="{% url 'perfil' %}" class="btn btn-outline btn-lg hover:scale-105 transition-all duration-300">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+                Cancelar
+              </a>
+            </div>
+          </form>
+        {% endif %}
+      </div>
+    </div>
+  </section>
+
+  <!-- Historial de Actividad -->
+  <section data-aos="fade-up" data-aos-delay="400">
+    <div class="card bg-gradient-to-br from-base-100 to-base-100/50 shadow-2xl border border-secondary/20">
+      
+      <!-- Header de la Card -->
+      <div class="bg-gradient-to-r from-secondary/20 to-secondary/10 p-6 border-b border-secondary/20">
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+          <div class="flex items-center gap-4">
+            <div class="p-3 bg-secondary/20 rounded-2xl">
+              <svg class="w-8 h-8 text-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+              </svg>
+            </div>
+            <div>
+              <h2 class="text-3xl font-bold text-secondary">Historial de Cálculos</h2>
+              <div class="badge badge-secondary badge-lg mt-1">{{ historial|length }} operaciones realizadas</div>
+            </div>
+          </div>
+          
+          <!-- Filtros rápidos -->
+          {% if historial %}
+            <div class="flex flex-wrap gap-2">
+              <button onclick="filterByMethod('all')" class="btn btn-sm btn-outline btn-secondary filter-btn active" data-method="all">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+                </svg>
+                Todos
+              </button>
+              <button onclick="filterByMethod('Newton-Raphson')" class="btn btn-sm btn-outline btn-primary filter-btn" data-method="Newton-Raphson">
+                🔍 Newton
+              </button>
+              <button onclick="filterByMethod('Integración')" class="btn btn-sm btn-outline btn-accent filter-btn" data-method="Integración">
+                ∫ Integración
+              </button>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="card-body p-8">
+        {% if historial %}
+          <!-- Banner informativo -->
+          <div class="alert alert-info mb-6" data-aos="fade-up">
+            <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <div>
+              <h4 class="font-bold">🚀 Nueva funcionalidad:</h4>
+              <div class="text-sm">Ahora puedes hacer clic en <strong>"Cargar en Calculadora"</strong> para abrir cualquier problema guardado con todos los datos y configuraciones precargados. ¡Perfecto para rehacer cálculos o probar con diferentes parámetros!</div>
+            </div>
+            <div class="flex gap-2 mt-2">
+              <div class="badge badge-success badge-sm">✓ Función precargada</div>
+              <div class="badge badge-success badge-sm">✓ Parámetros incluidos</div>
+              <div class="badge badge-success badge-sm">✓ Método seleccionado</div>
+            </div>
+          </div>
+
+          <!-- Barra de búsqueda -->
+          <div class="mb-8">
+            <div class="form-control">
+              <div class="input-group">
+                <input 
+                  type="text" 
+                  id="searchInput"
+                  placeholder="Buscar en el historial (función, resultado, fecha...)" 
+                  class="input input-bordered input-secondary w-full text-lg"
+                  onkeyup="searchHistory()"
+                />
+                <button class="btn btn-secondary">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Grid de Historial -->
+          <div id="historialContainer" class="grid grid-cols-1 xl:grid-cols-2 gap-8">
+            {% for h in historial %}
+              <div class="historial-item card bg-gradient-to-br from-base-200/80 to-base-300/50 shadow-xl border border-base-300/70 hover:shadow-2xl transition-all duration-500 hover:scale-[1.02] transform" 
+                   data-method="{{ h.metodo }}" 
+                   data-search="{{ h.metodo|lower }} {{ h.expresion|default:''|lower }} {{ h.resultado|lower }} {{ h.fecha|date:'d/m/Y'|lower }}">
+                
+                <!-- Header del historial mejorado -->
+                <div class="card-header bg-gradient-to-r {% if h.metodo == 'Newton-Raphson' %}from-primary/20 to-primary/10 border-primary/30{% elif 'Integración' in h.metodo %}from-accent/20 to-accent/10 border-accent/30{% else %}from-info/20 to-info/10 border-info/30{% endif %} p-4 border-b">
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                      <div class="p-2 {% if h.metodo == 'Newton-Raphson' %}bg-primary/30{% elif 'Integración' in h.metodo %}bg-accent/30{% else %}bg-info/30{% endif %} rounded-xl">
+                        {% if h.metodo == "Newton-Raphson" %}
+                          <span class="text-3xl">🔍</span>
+                        {% elif "Integración" in h.metodo %}
+                          <span class="text-3xl">∫</span>
+                        {% else %}
+                          <span class="text-3xl">📊</span>
+                        {% endif %}
+                      </div>
+                      <div>
+                        <h3 class="font-bold text-xl {% if h.metodo == 'Newton-Raphson' %}text-primary{% elif 'Integración' in h.metodo %}text-accent{% else %}text-info{% endif %}">{{ h.metodo }}</h3>
+                        <div class="text-sm text-base-content/70 font-medium">{{ h.fecha|date:"d/m/Y • H:i" }}</div>
+                      </div>
+                    </div>
+                    <div class="badge {% if h.metodo == 'Newton-Raphson' %}badge-primary{% elif 'Integración' in h.metodo %}badge-accent{% else %}badge-info{% endif %} badge-lg font-bold">
+                      {% if h.metodo == "Newton-Raphson" %}RAÍZ{% elif "Integración" in h.metodo %}ÁREA{% else %}CÁLCULO{% endif %}
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Contenido del cálculo rediseñado -->
+                <div class="card-body p-6">
+                  <div class="space-y-5">
+                    
+                    {% if h.expresion %}
+                      <div class="math-formula-highlight bg-gradient-to-r from-white/90 to-base-100/90 p-4 rounded-xl border-2 border-primary/20 shadow-inner">
+                        <div class="flex items-center gap-2 mb-3">
+                          <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                          </svg>
+                          <span class="font-bold text-primary text-lg">Función Analizada:</span>
+                        </div>
+                        <div class="math-content text-center text-2xl font-mono bg-white/70 p-3 rounded-lg">
+                          $${{ h.expresion|safe }}$$
+                        </div>
+                      </div>
+                    {% endif %}
+
+                    <!-- Resultado destacado -->
+                    <div class="bg-gradient-to-r from-success/20 to-success/10 p-5 rounded-xl border-2 border-success/30 shadow-lg">
+                      <div class="flex items-center gap-2 mb-3">
+                        <svg class="w-6 h-6 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span class="font-bold text-success text-lg">Resultado Final:</span>
+                      </div>
+                      <div class="text-3xl font-black text-success text-center bg-white/50 p-3 rounded-lg">
+                        {{ h.resultado }}
+                      </div>
+                    </div>
+
+                    {% if h.datos_salida %}
+                      <div class="bg-gradient-to-r from-info/15 to-info/5 p-4 rounded-xl border-l-4 border-info">
+                        <div class="flex items-center gap-2 mb-2">
+                          <svg class="w-5 h-5 text-info" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          <span class="font-semibold text-info">Datos de Salida:</span>
+                        </div>
+                        <div class="math-content text-center bg-white/60 p-2 rounded">
+                          $${{ h.datos_salida|safe }}$$
+                        </div>
+                      </div>
+                    {% endif %}
+
+                    {% if h.grafica %}
+                      <div class="bg-gradient-to-r from-warning/15 to-warning/5 p-4 rounded-xl border-l-4 border-warning">
+                        <div class="flex items-center gap-2 mb-3">
+                          <svg class="w-5 h-5 text-warning" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                          </svg>
+                          <span class="font-semibold text-warning text-lg">Visualización Gráfica:</span>
+                        </div>
+                        <div class="text-center">
+                          <img src="data:image/png;base64,{{ h.grafica }}" 
+                               alt="Gráfica del cálculo" 
+                               class="w-full max-w-lg mx-auto rounded-xl shadow-lg border-2 border-warning/40 hover:scale-105 transition-transform duration-300 cursor-pointer"
+                               onclick="openImageModal(this.src)" />
+                        </div>
+                      </div>
+                    {% endif %}
+
+                    <!-- Secciones expandibles mejoradas -->
+                    <div class="space-y-3">
+                      {% if h.parametros %}
+                        <div class="collapse collapse-plus bg-gradient-to-r from-base-300/70 to-base-200/50 border border-base-400/30 rounded-xl">
+                          <input type="checkbox" /> 
+                          <div class="collapse-title text-base font-bold flex items-center gap-2 text-neutral">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4" />
+                            </svg>
+                            📋 Parámetros del Cálculo
+                          </div>
+                          <div class="collapse-content">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-3">
+                              {% if h.parametros.items %}
+                                {% for clave, valor in h.parametros.items %}
+                                  <div class="bg-base-100 p-4 rounded-lg border border-base-300/50 shadow-sm">
+                                    <div class="text-xs font-medium text-base-content/60 uppercase tracking-wide">{{ clave }}</div>
+                                    <div class="font-mono text-base font-semibold mt-1">{{ valor }}</div>
+                                  </div>
+                                {% endfor %}
+                              {% else %}
+                                <div class="bg-base-100 p-4 rounded-lg font-mono">{{ h.parametros }}</div>
+                              {% endif %}
+                            </div>
+                          </div>
+                        </div>
+                      {% endif %}
+
+                      {% if h.tabla %}
+                        <div class="collapse collapse-plus bg-gradient-to-r from-accent/20 to-accent/10 border border-accent/30 rounded-xl">
+                          <input type="checkbox" /> 
+                          <div class="collapse-title text-base font-bold flex items-center gap-2 text-accent">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                            </svg>
+                            🧮 Procedimiento Paso a Paso
+                          </div>
+                          <div class="collapse-content">
+                            <div class="bg-base-100 p-4 rounded-lg overflow-x-auto border border-accent/20">
+                              <div class="font-mono text-sm math-content leading-relaxed">
+                                {{ h.tabla|safe }}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      {% endif %}
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Botones de acción -->
+                <div class="card-actions justify-between p-4 bg-base-200/50 border-t border-base-300/50">
+                  <!-- Botón principal: Cargar en Calculadora -->
+                  <div class="flex-1">
+                    {% if h.metodo == "Newton-Raphson" %}
+                      <a href="{% url 'vista_newton_precargado' h.id %}" 
+                         class="btn btn-primary btn-block shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-300 gap-2"
+                         onclick="mostrarNotificacion('Cargando datos en Newton-Raphson...', 'info')">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                        </svg>
+                        <span class="font-bold">Cargar en Calculadora</span>
+                        <div class="badge badge-primary-content ml-2">🔍</div>
+                      </a>
+                    {% elif "Integración" in h.metodo %}
+                      <a href="{% url 'integracion_view_precargado' h.id %}" 
+                         class="btn btn-accent btn-block shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-300 gap-2"
+                         onclick="mostrarNotificacion('Cargando datos en Integración...', 'info')">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                        </svg>
+                        <span class="font-bold">Cargar en Calculadora</span>
+                        <div class="badge badge-accent-content ml-2">∫</div>
+                      </a>
+                    {% endif %}
+                  </div>
+                  
+                  <!-- Botones secundarios -->
+                  <div class="flex gap-2 ml-4">
+                    <button onclick="shareCalculation('{{ h.metodo }}', '{{ h.expresion|safe }}', '{{ h.resultado }}')" 
+                            class="btn btn-ghost btn-sm tooltip tooltip-left" data-tip="Compartir cálculo">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z" />
+                      </svg>
+                    </button>
+                    <div class="dropdown dropdown-end">
+                      <div tabindex="0" role="button" class="btn btn-ghost btn-sm">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
+                        </svg>
+                      </div>
+                      <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52">
+                        <li><a onclick="exportCalculation('{{ h.id }}')"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>Exportar PDF</a></li>
+                        <li><a onclick="duplicateCalculation('{{ h.id }}')"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>Duplicar</a></li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            {% endfor %}
+          </div>
+
+          <!-- Mensaje cuando no hay resultados de búsqueda -->
+          <div id="noResults" class="text-center py-16 hidden">
+            <div class="text-6xl mb-4 opacity-50">🔍</div>
+            <h3 class="text-xl font-bold text-base-content/60 mb-2">No se encontraron resultados</h3>
+            <p class="text-base-content/60">Intenta con otros términos de búsqueda</p>
+            <button onclick="clearSearch()" class="btn btn-outline btn-secondary mt-4">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+              Limpiar búsqueda
+            </button>
+          </div>
+
+        {% else %}
+          <!-- Estado vacío mejorado -->
+          <div class="text-center py-20">
+            <div class="text-9xl mb-8 opacity-30">🧮</div>
+            <h3 class="text-3xl font-bold text-base-content/70 mb-6">¡Comienza tu primera calculación!</h3>
+            <p class="text-lg text-base-content/60 mb-10 max-w-2xl mx-auto leading-relaxed">
+              Resuelve ecuaciones complejas y calcula integrales definidas. Todos tus cálculos se guardarán aquí para que puedas consultarlos cuando necesites.
+            </p>
+            <div class="flex flex-col sm:flex-row gap-6 justify-center">
+              <a href="{% url 'vista_newton' %}" class="btn btn-primary btn-lg shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300">
+                <span class="text-3xl mr-3">🔍</span>
+                <div class="text-left">
+                  <div class="font-bold">Newton-Raphson</div>
+                  <div class="text-sm opacity-80">Encuentra raíces de funciones</div>
+                </div>
+              </a>
+              <a href="{% url 'integracion_view' %}" class="btn btn-secondary btn-lg shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300">
+                <span class="text-3xl mr-3">∫</span>
+                <div class="text-left">
+                  <div class="font-bold">Integración Numérica</div>
+                  <div class="text-sm opacity-80">Calcula áreas bajo curvas</div>
+                </div>
+              </a>
+            </div>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </section>
+</div>
+
+{% endblock %}
+
+<!-- Modal para ver imágenes en grande -->
+<dialog id="imageModal" class="modal">
+  <div class="modal-box max-w-4xl bg-base-100">
+    <div class="flex justify-between items-center mb-4">
+      <h3 class="font-bold text-lg">Visualización de Gráfica</h3>
+      <form method="dialog">
+        <button class="btn btn-sm btn-circle btn-ghost">✕</button>
+      </form>
+    </div>
+    <div class="text-center">
+      <img id="modalImage" src="" alt="Gráfica ampliada" class="max-w-full h-auto rounded-lg shadow-xl" />
+    </div>
+  </div>
+  <form method="dialog" class="modal-backdrop">
+    <button>close</button>
+  </form>
+</dialog>
+
+{% block extra_js %}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Procesar MathJax después de que se cargue el contenido
+    if (window.MathJax && window.MathJax.typesetPromise) {
+      window.MathJax.typesetPromise().then(() => {
+        console.log('Fórmulas del perfil renderizadas correctamente');
+      });
+    }
+
+    // Efecto hover mejorado en las cards del historial
+    const historialCards = document.querySelectorAll('.historial-item');
+    historialCards.forEach(card => {
+      card.addEventListener('mouseenter', function() {
+        this.style.transform = 'translateY(-8px) scale(1.02)';
+        this.style.boxShadow = '0 25px 50px -12px rgba(0, 0, 0, 0.4)';
+      });
+      
+      card.addEventListener('mouseleave', function() {
+        this.style.transform = 'translateY(0) scale(1)';
+        this.style.boxShadow = '';
+      });
+    });
+
+    // Auto-expandir el primer procedimiento si existe
+    const firstProcedure = document.querySelector('.collapse-plus input[type="checkbox"]');
+    if (firstProcedure) {
+      firstProcedure.checked = true;
+    }
+  });
+
+  // Función de búsqueda en tiempo real
+  function searchHistory() {
+    const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+    const historialItems = document.querySelectorAll('.historial-item');
+    const noResultsDiv = document.getElementById('noResults');
+    let visibleCount = 0;
+
+    historialItems.forEach(item => {
+      const searchData = item.getAttribute('data-search');
+      if (searchData.includes(searchTerm)) {
+        item.style.display = 'block';
+        visibleCount++;
+      } else {
+        item.style.display = 'none';
+      }
+    });
+
+    // Mostrar/ocultar mensaje de "no hay resultados"
+    if (visibleCount === 0 && searchTerm.length > 0) {
+      noResultsDiv.classList.remove('hidden');
+    } else {
+      noResultsDiv.classList.add('hidden');
+    }
+  }
+
+  // Función de filtrado por método
+  function filterByMethod(method) {
+    const historialItems = document.querySelectorAll('.historial-item');
+    const filterButtons = document.querySelectorAll('.filter-btn');
+    const noResultsDiv = document.getElementById('noResults');
+    let visibleCount = 0;
+
+    // Actualizar botones activos
+    filterButtons.forEach(btn => {
+      btn.classList.remove('active', 'btn-secondary');
+      btn.classList.add('btn-outline');
+      if (btn.getAttribute('data-method') === method) {
+        btn.classList.add('active', 'btn-secondary');
+        btn.classList.remove('btn-outline');
+      }
+    });
+
+    // Filtrar elementos
+    historialItems.forEach(item => {
+      const itemMethod = item.getAttribute('data-method');
+      if (method === 'all' || itemMethod.includes(method)) {
+        item.style.display = 'block';
+        visibleCount++;
+      } else {
+        item.style.display = 'none';
+      }
+    });
+
+    // Mostrar/ocultar mensaje de "no hay resultados"
+    if (visibleCount === 0) {
+      noResultsDiv.classList.remove('hidden');
+    } else {
+      noResultsDiv.classList.add('hidden');
+    }
+
+    // Limpiar búsqueda cuando se cambia el filtro
+    document.getElementById('searchInput').value = '';
+  }
+
+  // Función para limpiar búsqueda
+  function clearSearch() {
+    document.getElementById('searchInput').value = '';
+    searchHistory();
+    
+    // Resetear filtros
+    filterByMethod('all');
+  }
+
+  // Función para abrir modal de imagen
+  function openImageModal(imageSrc) {
+    const modal = document.getElementById('imageModal');
+    const modalImage = document.getElementById('modalImage');
+    modalImage.src = imageSrc;
+    modal.showModal();
+  }
+
+  // Función para compartir cálculo
+  function shareCalculation(metodo, expresion, resultado) {
+    const shareText = `¡Resolví un problema de ${metodo}!\n\nFunción: ${expresion}\nResultado: ${resultado}\n\nCalculado con SolverANS 🧮`;
+    
+    if (navigator.share) {
+      navigator.share({
+        title: `Resultado de ${metodo}`,
+        text: shareText,
+        url: window.location.href
+      }).catch(console.error);
+    } else {
+      // Fallback: copiar al portapapeles
+      navigator.clipboard.writeText(shareText).then(() => {
+        // Mostrar notificación
+        const toast = document.createElement('div');
+        toast.className = 'toast toast-top toast-end z-50';
+        toast.innerHTML = `
+          <div class="alert alert-success">
+            <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span>¡Cálculo copiado al portapapeles!</span>
+          </div>
+        `;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 3000);
+      }).catch(() => {
+        alert('Texto del cálculo:\n\n' + shareText);
+      });
+    }
+  }
+
+  // Añadir efectos de loading para las imágenes
+  document.querySelectorAll('img[src*="base64"]').forEach(img => {
+    img.addEventListener('load', function() {
+      this.style.opacity = '1';
+    });
+    img.style.opacity = '0';
+    img.style.transition = 'opacity 0.3s ease-in-out';
+  });
+
+  // Efecto de aparición escalonada para las cards
+  window.addEventListener('load', function() {
+    const cards = document.querySelectorAll('.historial-item');
+    cards.forEach((card, index) => {
+      setTimeout(() => {
+        card.style.opacity = '1';
+        card.style.transform = 'translateY(0)';
+      }, index * 150);
+    });
+  });
+
+  // Establecer opacidad inicial para el efecto de aparición
+  document.querySelectorAll('.historial-item').forEach(card => {
+    card.style.opacity = '0';
+    card.style.transform = 'translateY(20px)';
+    card.style.transition = 'all 0.6s ease-out';
+  });
+
+  // Función para mostrar notificaciones
+  function mostrarNotificacion(mensaje, tipo = 'info') {
+    const notificationArea = document.getElementById('notificationArea');
+    const notification = document.createElement('div');
+    
+    let bgColor = 'bg-info';
+    let icon = 'M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z';
+    
+    if (tipo === 'success') {
+      bgColor = 'bg-success';
+      icon = 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z';
+    } else if (tipo === 'error') {
+      bgColor = 'bg-error';
+      icon = 'M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z';
+    }
+    
+    notification.className = `alert ${bgColor} text-white shadow-lg transform translate-x-full transition-transform duration-300 max-w-sm`;
+    notification.innerHTML = `
+      <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="${icon}" />
+      </svg>
+      <span>${mensaje}</span>
+    `;
+    
+    notificationArea.appendChild(notification);
+    
+    // Animación de entrada
+    setTimeout(() => {
+      notification.classList.remove('translate-x-full');
+    }, 100);
+    
+    // Auto-remover después de 4 segundos
+    setTimeout(() => {
+      notification.classList.add('translate-x-full');
+      setTimeout(() => {
+        if (notification.parentNode) {
+          notification.parentNode.removeChild(notification);
+        }
+      }, 300);
+    }, 4000);
+  }
+
+  // Función para exportar cálculo (placeholder)
+  function exportCalculation(historialId) {
+    mostrarNotificacion('Función de exportación en desarrollo', 'info');
+    console.log('Exportar cálculo:', historialId);
+  }
+
+  // Función para duplicar cálculo (placeholder)
+  function duplicateCalculation(historialId) {
+    mostrarNotificacion('Función de duplicación en desarrollo', 'info');
+    console.log('Duplicar cálculo:', historialId);
+  }
+</script>
+{% endblock %}

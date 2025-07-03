@@ -1,0 +1,301 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}SolverANS{% endblock %}</title>
+  
+  <!-- Tailwind CSS + DaisyUI -->
+  <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/full.min.css" rel="stylesheet" type="text/css" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- MathJax -->
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+  
+  <!-- MathLive -->
+  <script src="https://unpkg.com/mathlive"></script>
+  <link rel="stylesheet" href="https://unpkg.com/mathlive/dist/mathlive.core.css" />
+  <link rel="stylesheet" href="https://unpkg.com/mathlive/dist/mathlive.css" />
+  
+  <!-- AOS Animations -->
+  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+  
+  <!-- Favicon -->
+  <link rel="icon" href="{% static 'favicon.ico' %}" />
+  
+  <!-- CSS personalizado para resaltado de fórmulas -->
+  <style>
+    /* Clase para resaltar fórmulas matemáticas */
+    .math-formula-highlight {
+      background: linear-gradient(135deg, 
+        rgba(99, 102, 241, 0.15) 0%, 
+        rgba(167, 139, 250, 0.12) 50%, 
+        rgba(236, 72, 153, 0.10) 100%);
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      border-radius: 0.75rem;
+      padding: 1rem;
+      box-shadow: 
+        0 4px 15px rgba(0, 0, 0, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(8px);
+      transition: all 0.3s ease-in-out;
+    }
+    
+    /* Efecto hover para las fórmulas destacadas */
+    .math-formula-highlight:hover {
+      transform: translateY(-2px);
+      box-shadow: 
+        0 8px 25px rgba(0, 0, 0, 0.15),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3);
+      border-color: rgba(99, 102, 241, 0.5);
+    }
+    
+    /* Mejorar la apariencia de MathJax */
+    .math-content .MathJax {
+      color: hsl(var(--p)) !important;
+      font-weight: 600 !important;
+      filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
+    }
+    
+    /* Efectos de glassmorphism mejorados */
+    .glass-card {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+  </style>
+  
+  <!-- Block para CSS adicional -->
+  {% block extra_css %}{% endblock %}
+  
+  <!-- Configuración de MathJax -->
+  <script>
+    window.MathJax = {
+      tex: { 
+        inlineMath: [['$', '$'], ['\\(', '\\)']], 
+        displayMath: [['$$', '$$'], ['\\[', '\\]']]
+      },
+      svg: { fontCache: 'global' },
+      startup: {
+        ready: () => {
+          MathJax.startup.defaultReady();
+          console.log('MathJax cargado correctamente');
+          // Procesar contenido matemático después de cargar
+          setTimeout(() => {
+            if (window.MathJax && window.MathJax.typesetPromise) {
+              window.MathJax.typesetPromise();
+            }
+          }, 1000);
+        }
+      }
+    };
+  </script>
+</head>
+
+<body class="{% block body_class %}min-h-screen bg-gradient-to-br from-base-300 via-base-200 to-base-100{% endblock %}">
+  
+  <!-- Navbar -->
+  <div class="navbar bg-base-100/95 backdrop-blur-md shadow-xl sticky top-0 z-50 border-b border-primary/20">
+    <div class="navbar-start">
+      <!-- Mobile menu button -->
+      <div class="dropdown lg:hidden">
+        <div tabindex="0" role="button" class="btn btn-ghost btn-circle">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h8m-8 6h16" />
+          </svg>
+        </div>
+        <ul tabindex="0" class="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow-lg bg-base-100 rounded-box w-64 border border-primary/20">
+          <li class="menu-title">
+            <span class="text-primary">📚 Navegación</span>
+          </li>
+          <li><a href="{% url 'menu' %}" class="flex items-center gap-3">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+            </svg>
+            Inicio
+          </a></li>
+          {% if user.is_authenticated %}
+          <li><a href="{% url 'perfil' %}" class="flex items-center gap-3">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+            </svg>
+            Mi Perfil
+          </a></li>
+          <div class="divider my-1"></div>
+          <li>
+            <form method="post" action="{% url 'logout' %}" class="w-full">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-error btn-sm w-full justify-start gap-3">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                </svg>
+                Cerrar Sesión
+              </button>
+            </form>
+          </li>
+          {% else %}
+          <li><a href="{% url 'login' %}" class="flex items-center gap-3 text-accent">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+            </svg>
+            Iniciar Sesión
+          </a></li>
+          {% endif %}
+        </ul>
+      </div>
+      
+      <!-- Logo/Brand -->
+      <a href="{% url 'menu' %}" class="btn btn-ghost text-xl font-bold hover:bg-primary/10 transition-all duration-300">
+        <div class="flex items-center gap-2">
+          <div class="text-3xl">⚙️</div>
+          <div class="flex flex-col items-start">
+            <span class="text-primary font-black text-lg leading-none">SolverANS</span>
+            <span class="text-xs text-base-content/60 font-normal leading-none">Métodos Numéricos</span>
+          </div>
+        </div>
+      </a>
+    </div>
+    
+    <!-- Desktop Menu -->
+    <div class="navbar-center hidden lg:flex">
+      <ul class="menu menu-horizontal px-1">
+        <li>
+          <a href="{% url 'menu' %}" class="btn btn-ghost font-medium hover:bg-primary/10 hover:text-primary transition-all duration-300">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+            </svg>
+            Inicio
+          </a>
+        </li>
+      </ul>
+    </div>
+    
+    <!-- User Menu -->
+    <div class="navbar-end">
+      {% if user.is_authenticated %}
+        <div class="dropdown dropdown-end">
+          <div tabindex="0" role="button" class="btn btn-ghost btn-circle avatar hover:bg-primary/10 transition-all duration-300">
+            <div class="w-10 h-10 rounded-full shadow-lg ring-2 ring-primary/30 hover:ring-primary/60 transition-all duration-300 overflow-hidden">
+              {% if user.is_authenticated %}
+                {% if user_perfil.foto %}
+                  <img src="{{ user_perfil.foto.url }}" alt="Foto de perfil" class="w-full h-full object-cover" />
+                {% else %}
+                  <div class="w-full h-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
+                    <span class="text-sm font-bold text-white">{{ user.username|first|upper }}</span>
+                  </div>
+                {% endif %}
+              {% else %}
+                <div class="w-full h-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
+                  <span class="text-sm font-bold text-white">?</span>
+                </div>
+              {% endif %}
+            </div>
+          </div>
+          <ul tabindex="0" class="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow-lg bg-base-100 rounded-box w-64 border border-primary/20">
+            <li class="menu-title">
+              <span class="text-primary flex items-center gap-2">
+                <span class="text-lg">👤</span>
+                {{ user.username }}
+              </span>
+            </li>
+            <li><a href="{% url 'perfil' %}" class="flex items-center gap-3 hover:bg-secondary/10">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
+              Ver mi perfil
+            </a></li>
+            <li><a href="{% url 'menu' %}" class="flex items-center gap-3 hover:bg-accent/10">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+              </svg>
+              Panel principal
+            </a></li>
+            <div class="divider my-1"></div>
+            <li>
+              <form method="post" action="{% url 'logout' %}">
+                {% csrf_token %}
+                <button type="submit" class="flex items-center gap-3 text-error hover:bg-error/10 w-full text-left rounded-lg">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                  </svg>
+                  Cerrar sesión
+                </button>
+              </form>
+            </li>
+          </ul>
+        </div>
+      {% else %}
+        <a href="{% url 'login' %}" class="btn btn-primary btn-sm shadow-lg hover:shadow-xl transition-all duration-300">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+          </svg>
+          Iniciar Sesión
+        </a>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Contenido principal -->
+  <main>
+    {% block content %}
+    {% endblock %}
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer footer-center p-10 bg-base-100 text-base-content mt-20">
+    <div>
+      <p class="font-bold text-lg">SolverANS - Métodos Numéricos</p>
+      <p class="text-base-content/70">© 2025 - Resolviendo ecuaciones con precisión matemática</p>
+    </div>
+  </footer>
+
+  <!-- Scripts base -->
+  <script>
+    // Inicializar AOS cuando esté disponible
+    document.addEventListener('DOMContentLoaded', function() {
+      if (typeof AOS !== 'undefined') {
+        AOS.init({
+          duration: 800,
+          easing: 'ease-in-out',
+          once: true,
+          offset: 100
+        });
+      }
+      
+      // Función global para procesar contenido matemático dinámico
+      window.procesarMathJax = function() {
+        if (window.MathJax && window.MathJax.typesetPromise) {
+          const mathElements = document.querySelectorAll('.math-content');
+          if (mathElements.length > 0) {
+            window.MathJax.typesetPromise(mathElements).then(() => {
+              console.log('Contenido matemático procesado correctamente');
+            }).catch((err) => {
+              console.error('Error procesando MathJax:', err);
+            });
+          } else {
+            // Si no hay elementos específicos, procesar toda la página
+            window.MathJax.typesetPromise();
+          }
+        }
+      };
+      
+      // Procesar MathJax al cargar la página
+      setTimeout(() => {
+        window.procesarMathJax();
+      }, 1500);
+      
+      console.log('🚀 SolverANS Base inicializado correctamente');
+    });
+
+    // Eliminar cualquier evento beforeunload existente (sin advertencias de abandono)
+    window.onbeforeunload = null;
+    window.removeEventListener('beforeunload', arguments.callee, false);
+  </script>
+  
+  <!-- Block para JavaScript adicional -->
+  {% block extra_js %}{% endblock %}
+</body>
+</html>
