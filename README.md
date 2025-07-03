@@ -1,6 +1,6 @@
-# SolverANS - Métodos Numéricos
+# SolverMath - Métodos Numéricos
 
-🧮 **SolverANS** es una aplicación web avanzada desarrollada en Django para resolver problemas de métodos numéricos de manera intuitiva y eficiente.
+🧮 **SolverMath** es una aplicación web avanzada desarrollada en Django para resolver problemas de métodos numéricos de manera intuitiva y eficiente.
 
 ## ✨ Características Principales
 
@@ -42,8 +42,8 @@
 
 ### 1. Clonar el repositorio
 ```bash
-git clone https://github.com/tu-usuario/SolverANS.git
-cd SolverANS
+git clone https://github.com/Josue-Nani/SolverMath.git
+cd SolverMath
 ```
 
 ### 2. Crear entorno virtual
@@ -126,7 +126,7 @@ DATABASE_URL=sqlite:///db.sqlite3
 ## 📁 Estructura del Proyecto
 
 ```
-SolverANS/
+SolverMath/
 ├── solverANS/          # Configuración principal
 ├── solverApp/          # Aplicación principal
 │   ├── models.py       # Modelos de datos
@@ -161,7 +161,7 @@ Desarrollado con ❤️ para el curso de Métodos Numéricos
 ## 📞 Soporte
 
 Si tienes preguntas o encuentras algún bug, por favor:
-1. Revisa los [Issues existentes](https://github.com/tu-usuario/SolverANS/issues)
+1. Revisa los [Issues existentes](https://github.com/Josue-Nani/SolverMath/issues)
 2. Crea un nuevo Issue si es necesario
 3. Proporciona información detallada del problema
 
