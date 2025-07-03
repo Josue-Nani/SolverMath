@@ -347,78 +347,96 @@ def newton_raphson_view(request, historial_id=None):
     if request.method == 'POST':
         funcion_str = request.POST.get('funcion', '').replace('^', '**')
         x0_str = request.POST.get('x0')
-        tolerancia_str = request.POST.get('tolerancia')
-        decimales_str = request.POST.get('decimales')
+        tolerancia_str = request.POST.get('tolerancia', '1e-6')
+        decimales_str = request.POST.get('decimales', '6')
 
         if funcion_str and x0_str and tolerancia_str and decimales_str:
             try:
                 x0 = float(x0_str)
                 tolerancia = float(tolerancia_str)
                 decimales = int(decimales_str)
+                
+                # Validar parámetros de entrada
+                if tolerancia <= 0:
+                    error = "La tolerancia debe ser mayor que 0"
+                elif tolerancia > 1:
+                    error = "La tolerancia debe ser menor que 1 (recomendado: 1e-6)"
+                elif decimales < 1 or decimales > 15:
+                    error = "Los decimales deben estar entre 1 y 15"
+                else:
+                    x = Symbol('x')
 
-                x = Symbol('x')
+                    # Limpiar y convertir la función
+                    expr = sympify(funcion_str, evaluate=True)
+                    derivada = diff(expr, x)
+                    derivada_str = str(derivada)
+                    funcion_original = str(expr)
 
-                # Limpiar y convertir la función
-                expr = sympify(funcion_str, evaluate=True)
-                derivada = diff(expr, x)
-                derivada_str = str(derivada)
-                funcion_original = str(expr)
+                    # Crear funciones evaluables para validación inicial
+                    f = lambdify(x, expr, modules=["math"])
+                    f_prime = lambdify(x, derivada, modules=["math"])
 
-                # Crear funciones evaluables
-                f = lambdify(x, expr, modules=["math"])
-                f_prime = lambdify(x, derivada, modules=["math"])
+                    # Verificar si se pueden evaluar los valores iniciales
+                    try:
+                        f_val = f(x0)
+                        f_prime_val = f_prime(x0)
+                        
+                        if not (math.isfinite(f_val) and math.isfinite(f_prime_val)):
+                            error = f"La función no se puede evaluar en x0 = {x0}. Intenta con otro valor inicial."
+                        elif abs(f_prime_val) < 1e-10:
+                            error = f"La derivada es muy pequeña en x0 = {x0} (f'(x0) = {f_prime_val:.2e}). Intenta con otro valor inicial."
+                        else:
+                            # Ejecutar Newton-Raphson mejorado
+                            resultado, error_valor, pasos = newton_raphson(funcion_str, x0, tolerancia)
+                            
+                            if error_valor:
+                                error = error_valor
+                            else:
+                                for paso in pasos:
+                                    procedimiento.append({
+                                        'iteracion': paso['iteracion'],
+                                        'x0': round(paso['xi'], decimales),
+                                        'f_x0': round(paso['f(xi)'], decimales),
+                                        'f_prime_x0': round(paso["f'(xi)"], decimales),
+                                        'x1': round(paso['xi_nuevo'], decimales),
+                                        'tolerancia': round(paso['error'], decimales),
+                                        'formula': paso['formula_tex']
+                                    })
 
-                # Verificar si se pueden evaluar los valores iniciales
-                try:
-                    f_val = f(x0)
-                    f_prime_val = f_prime(x0)
-                    float(f_val), float(f_prime_val)
-                except Exception as eval_error:
-                    raise ValueError("Error al evaluar funciones: " + str(eval_error))
+                                # Generar HTML para historial
+                                tabla_html = "<table class='w-full text-sm text-left text-gray-300 border border-cyan-700 mt-2 rounded-lg overflow-hidden'>"
+                                tabla_html += "<thead class='bg-cyan-900 text-cyan-300 uppercase font-semibold text-xs'><tr><th class='px-2 py-1'>Iteración</th><th>x₀</th><th>f(x₀)</th><th>f'(x₀)</th><th>x₁</th><th>Error</th></tr></thead><tbody>"
+                                for paso in procedimiento:
+                                    tabla_html += f"<tr class='border-t border-gray-700'><td class='px-2 py-1'>{paso['iteracion']}</td><td>{paso['x0']}</td><td>{paso['f_x0']}</td><td>{paso['f_prime_x0']}</td><td>{paso['x1']}</td><td>{paso['tolerancia']}</td></tr>"
+                                tabla_html += "</tbody></table>"
 
-                # Ejecutar Newton-Raphson
-                resultado, error_valor, pasos = newton_raphson(funcion_str, x0, tolerancia)
+                                tabla_html += "<div class='mt-4 bg-gray-800 p-4 rounded-lg border border-cyan-700'><h3 class='text-cyan-300 font-semibold mb-2'>Fórmulas aplicadas:</h3><div class='space-y-2 text-sm text-gray-200'>"
+                                for paso in procedimiento:
+                                    tabla_html += f"<p>\\[{paso['formula']}\\]</p>"
+                                tabla_html += "</div></div>"
 
-                for paso in pasos:
-                    procedimiento.append({
-                        'iteracion': paso['iteracion'],
-                        'x0': round(paso['xi'], decimales),
-                        'f_x0': round(paso['f(xi)'], decimales),
-                        'f_prime_x0': round(paso["f'(xi)"], decimales),
-                        'x1': round(paso['xi_nuevo'], decimales),
-                        'tolerancia': round(paso['error'], decimales),
-                        'formula': paso['formula_tex']
-                    })
+                                # Guardar en historial
+                                if resultado is not None and request.user.is_authenticated and request.user.username != "invitado":
+                                    HistorialOperacion.objects.create(
+                                        usuario=request.user,
+                                        metodo="Newton-Raphson",
+                                        expresion=funcion_str,
+                                        datos_entrada=f"f(x)={funcion_str}, x0={x0}, tolerancia={tolerancia}",
+                                        resultado=str(resultado),
+                                        parametros={
+                                            'x0': x0,
+                                            'tolerancia': tolerancia,
+                                            'decimales': decimales,
+                                            'iteraciones': len(procedimiento)
+                                        },
+                                        tabla=tabla_html
+                                    )
+                                    
+                    except Exception as eval_error:
+                        error = f"Error al evaluar la función en x0 = {x0}: {str(eval_error)}"
 
-                # Generar HTML para historial
-                tabla_html = "<table class='w-full text-sm text-left text-gray-300 border border-cyan-700 mt-2 rounded-lg overflow-hidden'>"
-                tabla_html += "<thead class='bg-cyan-900 text-cyan-300 uppercase font-semibold text-xs'><tr><th class='px-2 py-1'>Iteración</th><th>x₀</th><th>f(x₀)</th><th>f'(x₀)</th><th>x₁</th><th>Error</th></tr></thead><tbody>"
-                for paso in procedimiento:
-                    tabla_html += f"<tr class='border-t border-gray-700'><td class='px-2 py-1'>{paso['iteracion']}</td><td>{paso['x0']}</td><td>{paso['f_x0']}</td><td>{paso['f_prime_x0']}</td><td>{paso['x1']}</td><td>{paso['tolerancia']}</td></tr>"
-                tabla_html += "</tbody></table>"
-
-                tabla_html += "<div class='mt-4 bg-gray-800 p-4 rounded-lg border border-cyan-700'><h3 class='text-cyan-300 font-semibold mb-2'>Fórmulas aplicadas:</h3><div class='space-y-2 text-sm text-gray-200'>"
-                for paso in procedimiento:
-                    tabla_html += f"<p>\\[{paso['formula']}\\]</p>"
-                tabla_html += "</div></div>"
-
-                # Guardar en historial
-                if resultado is not None and request.user.is_authenticated and request.user.username != "invitado":
-                    HistorialOperacion.objects.create(
-                        usuario=request.user,
-                        metodo="Newton-Raphson",
-                        expresion=funcion_str,
-                        datos_entrada=f"f(x)={funcion_str}, x0={x0}, tolerancia={tolerancia}",
-                        resultado=str(resultado),
-                        parametros={
-                            'x0': x0,
-                            'tolerancia': tolerancia,
-                            'decimales': decimales,
-                            'iteraciones': len(procedimiento)
-                        },
-                        tabla=tabla_html
-                    )
-
+            except ValueError as ve:
+                error = f"Error en los parámetros: {str(ve)}"
             except Exception as e:
                 error = f"Error de entrada: {str(e)}"
 
