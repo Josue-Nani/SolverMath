@@ -33,7 +33,7 @@ def newton_raphson(funcion_str, valor_inicial, tolerancia=1e-6, max_iter=100):
     min_cambio = float('inf')
     iteraciones_sin_mejora = 0
     
-    for i in range(1, max_iter + 1):
+    for i in range(max_iter):
         try:
             f_xi = f_func(xi)
             f_prime_xi = f_prime_func(xi)
@@ -61,7 +61,7 @@ def newton_raphson(funcion_str, valor_inicial, tolerancia=1e-6, max_iter=100):
 
         # Generar fórmula en LaTeX
         formula_tex = (
-            f"x_{{{i}}} = {xi:.6f} - \\frac{{{f_xi:.6f}}}{{{f_prime_xi:.6f}}} = {xi_nuevo:.6f} \\\\ "
+            f"x_{{{i+1}}} = {xi:.6f} - \\frac{{{f_xi:.6f}}}{{{f_prime_xi:.6f}}} = {xi_nuevo:.6f} \\\\ "
             f"\\text{{Error}} = {error_efectivo:.6f}"
         )
         
@@ -123,6 +123,7 @@ def newton_raphson(funcion_str, valor_inicial, tolerancia=1e-6, max_iter=100):
         if len(valores_anteriores) > 5:
             valores_anteriores.pop(0)
             
+        # ACTUALIZAR xi para la siguiente iteración
         xi = xi_nuevo
 
     return None, f"No se alcanzó convergencia después de {max_iter} iteraciones. Intenta con un valor inicial diferente o mayor tolerancia.", historial

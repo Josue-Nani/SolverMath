@@ -1,0 +1,353 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Panel de Administración{% endblock %}
+
+{% block content %}
+<style>
+    .admin-background {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: radial-gradient(ellipse at bottom, #0f172a 0%, #1e293b 100%);
+        z-index: -2;
+    }
+    
+    .admin-orbs {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: -1;
+        pointer-events: none;
+    }
+    
+    .orb {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(2px);
+        animation: float 8s ease-in-out infinite;
+        opacity: 0.6;
+    }
+    
+    .orb-1 {
+        width: 300px;
+        height: 300px;
+        background: radial-gradient(circle, #06b6d4 0%, transparent 70%);
+        top: 10%;
+        left: 10%;
+        animation-delay: 0s;
+    }
+    
+    .orb-2 {
+        width: 250px;
+        height: 250px;
+        background: radial-gradient(circle, #8b5cf6 0%, transparent 70%);
+        top: 20%;
+        right: 10%;
+        animation-delay: -2s;
+    }
+    
+    .orb-3 {
+        width: 200px;
+        height: 200px;
+        background: radial-gradient(circle, #2563eb 0%, transparent 70%);
+        bottom: 20%;
+        left: 20%;
+        animation-delay: -4s;
+    }
+    
+    .orb-4 {
+        width: 180px;
+        height: 180px;
+        background: radial-gradient(circle, #10b981 0%, transparent 70%);
+        bottom: 30%;
+        right: 30%;
+        animation-delay: -6s;
+    }
+    
+    @keyframes float {
+        0%, 100% { transform: translateY(0px) rotate(0deg); }
+        50% { transform: translateY(-30px) rotate(180deg); }
+    }
+    
+    .header-premium {
+        background: linear-gradient(135deg, rgba(6, 182, 212, 0.1) 0%, rgba(37, 99, 235, 0.1) 100%);
+        border: 1px solid rgba(6, 182, 212, 0.3);
+        backdrop-filter: blur(20px);
+        box-shadow: 0 10px 40px rgba(6, 182, 212, 0.3);
+        border-radius: 24px;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .header-premium::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: linear-gradient(90deg, transparent, #06b6d4, transparent);
+    }
+    
+    .nav-premium {
+        background: linear-gradient(135deg, rgba(6, 182, 212, 0.1) 0%, rgba(37, 99, 235, 0.1) 100%);
+        border: 1px solid rgba(6, 182, 212, 0.3);
+        backdrop-filter: blur(20px);
+        box-shadow: 0 10px 40px rgba(6, 182, 212, 0.2);
+        border-radius: 20px;
+    }
+    
+    .nav-btn {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(6, 182, 212, 0.3);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .nav-btn::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(6, 182, 212, 0.2), transparent);
+        transition: left 0.6s ease;
+    }
+    
+    .nav-btn:hover::before {
+        left: 100%;
+    }
+    
+    .nav-btn:hover {
+        background: rgba(6, 182, 212, 0.1);
+        box-shadow: 0 8px 25px rgba(6, 182, 212, 0.4);
+        transform: translateY(-2px);
+    }
+    
+    .nav-btn.active {
+        background: linear-gradient(135deg, #06b6d4 0%, #2563eb 100%);
+        box-shadow: 0 8px 25px rgba(6, 182, 212, 0.5);
+        color: white;
+    }
+    
+    .content-premium {
+        background: linear-gradient(135deg, rgba(6, 182, 212, 0.1) 0%, rgba(37, 99, 235, 0.1) 100%);
+        border: 1px solid rgba(6, 182, 212, 0.3);
+        backdrop-filter: blur(20px);
+        box-shadow: 0 10px 40px rgba(6, 182, 212, 0.2);
+        border-radius: 20px;
+        min-height: 600px;
+    }
+    
+    .title-glow {
+        text-shadow: 0 0 20px rgba(6, 182, 212, 0.5);
+    }
+    
+    .animate-fade-in {
+        animation: fadeIn 0.8s ease-out;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(30px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .animate-slide-in {
+        animation: slideIn 1s ease-out;
+    }
+    
+    @keyframes slideIn {
+        from { opacity: 0; transform: translateX(-50px); }
+        to { opacity: 1; transform: translateX(0); }
+    }
+</style>
+
+<!-- Fondo premium -->
+<div class="admin-background"></div>
+<div class="admin-orbs">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+    <div class="orb orb-4"></div>
+</div>
+
+<!-- Contenido principal -->
+<div class="min-h-screen py-8 px-4">
+    <div class="max-w-7xl mx-auto space-y-8">
+        
+        <!-- Header del Admin -->
+        <div class="header-premium p-8 text-center animate-fade-in">
+            <h1 class="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent title-glow">
+                <span class="mr-3">🛠️</span>Panel de Administración
+            </h1>
+            <p class="text-lg md:text-xl text-gray-300 opacity-90">
+                Gestiona usuarios, operaciones y estadísticas del sistema
+            </p>
+            <div class="mt-6 flex justify-center">
+                <div class="w-32 h-1 bg-gradient-to-r from-transparent via-cyan-400 to-transparent rounded-full"></div>
+            </div>
+        </div>
+        
+        <!-- Navegación responsive -->
+        <div class="nav-premium animate-slide-in">
+            <div class="p-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <a href="{% url 'admin_panel' %}" class="nav-btn {% if request.resolver_match.url_name == 'admin_panel' %}active{% endif %} btn btn-lg text-white">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5a2 2 0 012-2h4a2 2 0 012 2v3H8V5z"/>
+                        </svg>
+                        Dashboard
+                    </a>
+                    <a href="{% url 'admin_usuarios' %}" class="nav-btn {% if request.resolver_match.url_name == 'admin_usuarios' or request.resolver_match.url_name == 'admin_usuario_detalle' %}active{% endif %} btn btn-lg text-white">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"/>
+                        </svg>
+                        Usuarios
+                    </a>
+                    <a href="{% url 'admin_historial' %}" class="nav-btn {% if request.resolver_match.url_name == 'admin_historial' %}active{% endif %} btn btn-lg text-white">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                        </svg>
+                        Historial
+                    </a>
+                    <a href="{% url 'admin_estadisticas' %}" class="nav-btn {% if request.resolver_match.url_name == 'admin_estadisticas' %}active{% endif %} btn btn-lg text-white">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                        </svg>
+                        Estadísticas
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Contenido del admin -->
+        <div class="content-premium animate-fade-in">
+            <div class="p-6 md:p-8">
+                {% block admin_content %}
+                {% endblock %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Función para mostrar alertas premium
+    function showAlert(message, type = 'success') {
+        const alertDiv = document.createElement('div');
+        alertDiv.className = `alert alert-${type} animate-fade-in`;
+        alertDiv.innerHTML = `
+            <div class="flex items-center">
+                <svg class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                </svg>
+                ${message}
+            </div>
+        `;
+        
+        const container = document.querySelector('.content-premium');
+        container.insertBefore(alertDiv, container.firstChild);
+        
+        setTimeout(() => {
+            alertDiv.classList.add('animate-fade-out');
+            setTimeout(() => alertDiv.remove(), 300);
+        }, 5000);
+    }
+    
+    // Función para confirmar eliminación
+    function confirmDelete(message) {
+        return confirm(message || '¿Estás seguro de que quieres eliminar este elemento?');
+    }
+    
+    // Función para toggle de usuario activo
+    function toggleUserActive(userId) {
+        fetch(`/admin-panel/usuarios/${userId}/toggle-active/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                'Content-Type': 'application/json',
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showAlert(data.message, 'success');
+                location.reload();
+            } else {
+                showAlert(data.message, 'error');
+            }
+        })
+        .catch(error => {
+            showAlert('Error al cambiar el estado del usuario', 'error');
+        });
+    }
+    
+    // Función para eliminar usuario
+    function deleteUser(userId) {
+        if (confirmDelete('¿Estás seguro de que quieres eliminar este usuario? Esta acción no se puede deshacer.')) {
+            fetch(`/admin-panel/usuarios/${userId}/delete/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                    'Content-Type': 'application/json',
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showAlert(data.message, 'success');
+                    location.reload();
+                } else {
+                    showAlert(data.message, 'error');
+                }
+            })
+            .catch(error => {
+                showAlert('Error al eliminar el usuario', 'error');
+            });
+        }
+    }
+    
+    // Función para eliminar historial
+    function deleteHistorial(historialId) {
+        if (confirmDelete('¿Estás seguro de que quieres eliminar esta entrada del historial?')) {
+            fetch(`/admin-panel/historial/${historialId}/delete/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                    'Content-Type': 'application/json',
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showAlert(data.message, 'success');
+                    location.reload();
+                } else {
+                    showAlert(data.message, 'error');
+                }
+            })
+            .catch(error => {
+                showAlert('Error al eliminar la entrada del historial', 'error');
+            });
+        }
+    }
+    
+    // Animaciones adicionales
+    document.addEventListener('DOMContentLoaded', function() {
+        // Añadir clases de animación a elementos
+        const elements = document.querySelectorAll('.nav-btn, .card-premium');
+        elements.forEach((el, index) => {
+            el.style.animationDelay = `${index * 0.1}s`;
+        });
+    });
+</script>
+{% endblock %}

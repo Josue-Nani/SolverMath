@@ -3,6 +3,36 @@
 
 {% block title %}Integración Numérica | SolverANS{% endblock %}
 
+{% block extra_css %}
+<style>
+  .badge-cyan { 
+    background-color: #06b6d4; 
+    color: white; 
+    border-color: #0891b2; 
+  }
+  .badge-blue { 
+    background-color: #3b82f6; 
+    color: white; 
+    border-color: #2563eb; 
+  }
+  .badge-green { 
+    background-color: #10b981; 
+    color: white; 
+    border-color: #059669; 
+  }
+  .badge-yellow { 
+    background-color: #f59e0b; 
+    color: white; 
+    border-color: #d97706; 
+  }
+  .text-cyan-300 { color: #67e8f9; }
+  .text-green-300 { color: #86efac; }
+  .text-blue-300 { color: #93c5fd; }
+  .text-yellow-300 { color: #fde047; }
+  .text-purple-300 { color: #d8b4fe; }
+</style>
+{% endblock %}
+
 {% block content %}
 
   <!-- Fondo animado -->
@@ -63,9 +93,9 @@
                     <span class="label-text text-cyan-200 font-semibold">Método de cuadratura</span>
                   </label>
                   <select name="metodos_integracion" class="select select-bordered border-cyan-500/50 bg-base-100/20 text-white focus:border-cyan-400">
-                    <option value="1" {% if datos_precargados and datos_precargados.metodo == 1 %}selected{% endif %}>Regla del Trapecio</option>
-                    <option value="2" {% if datos_precargados and datos_precargados.metodo == 2 %}selected{% endif %}>Regla de Simpson 1/3</option>
-                    <option value="3" {% if datos_precargados and datos_precargados.metodo == 3 %}selected{% endif %}>Regla de Simpson 3/8</option>
+                    <option value="1" {% if datos_formulario.metodo == 1 or datos_precargados.metodo == 1 %}selected{% endif %}>Regla del Trapecio</option>
+                    <option value="2" {% if datos_formulario.metodo == 2 or datos_precargados.metodo == 2 %}selected{% endif %}>Regla de Simpson 1/3</option>
+                    <option value="3" {% if datos_formulario.metodo == 3 or datos_precargados.metodo == 3 %}selected{% endif %}>Regla de Simpson 3/8</option>
                   </select>
                 </div>
 
@@ -100,20 +130,18 @@
                   <div class="form-control">
                     <label class="label">
                       <span class="label-text text-cyan-200 font-semibold">Límite inferior (a)</span>
-                    </label>
-                    <input type="number" name="input_limiteIzquierdo" step="any" required
-                      class="input input-bordered border-cyan-500/50 bg-base-100/20 text-white focus:border-cyan-400" 
-                      placeholder="0"
-                      value="{% if datos_precargados %}{{ datos_precargados.a }}{% endif %}">
+                    </label>                  <input type="number" name="input_limiteIzquierdo" step="any" required
+                    class="input input-bordered border-cyan-500/50 bg-base-100/20 text-white focus:border-cyan-400" 
+                    placeholder="0"
+                    value="{% if datos_formulario.limite_izquierdo %}{{ datos_formulario.limite_izquierdo }}{% elif datos_precargados.a %}{{ datos_precargados.a }}{% endif %}">
                   </div>
                   <div class="form-control">
                     <label class="label">
                       <span class="label-text text-cyan-200 font-semibold">Límite superior (b)</span>
-                    </label>
-                    <input type="number" name="input_limiteDerecho" step="any" required
-                      class="input input-bordered border-cyan-500/50 bg-base-100/20 text-white focus:border-cyan-400" 
-                      placeholder="1"
-                      value="{% if datos_precargados %}{{ datos_precargados.b }}{% endif %}">
+                    </label>                  <input type="number" name="input_limiteDerecho" step="any" required
+                    class="input input-bordered border-cyan-500/50 bg-base-100/20 text-white focus:border-cyan-400" 
+                    placeholder="1"
+                    value="{% if datos_formulario.limite_derecho %}{{ datos_formulario.limite_derecho }}{% elif datos_precargados.b %}{{ datos_precargados.b }}{% endif %}">
                   </div>
                 </div>
 
@@ -126,7 +154,7 @@
                   <input type="number" name="input_intervalos" min="1" step="1" required
                     class="input input-bordered border-cyan-500/50 bg-base-100/20 text-white focus:border-cyan-400" 
                     placeholder="10"
-                    value="{% if datos_precargados %}{{ datos_precargados.n }}{% endif %}">
+                    value="{% if datos_formulario.intervalos %}{{ datos_formulario.intervalos }}{% elif datos_precargados.n %}{{ datos_precargados.n }}{% endif %}">
                 </div>
 
                 <!-- Botón de cálculo -->
@@ -239,26 +267,215 @@
         </div>
       {% endif %}
 
-      <!-- Procedimiento paso a paso -->
+      <!-- Procedimiento paso a paso REDISEÑADO -->
       {% if procedimiento and request.user.username != "invitado" %}
         <div data-aos="fade-up" data-aos-delay="100">
-          <div class="card bg-base-100/10 backdrop-blur-lg border border-cyan-500/20 shadow-xl">
-            <div class="card-body">
-              <h3 class="card-title text-cyan-300">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                </svg>
-                Procedimiento paso a paso
-              </h3>
-              
-              <div class="bg-base-200/20 rounded-lg p-4 overflow-x-auto">
-                <ol class="list-decimal list-inside space-y-3 text-gray-200">
-                  {% for paso in procedimiento %}
-                    <li class="border-l-2 border-cyan-500/30 pl-4 py-2">
-                      <div class="math-formula-highlight font-mono text-sm">$$ {{ paso|safe }} $$</div>
-                    </li>
-                  {% endfor %}
-                </ol>
+          <div class="text-center mb-8">
+            <h2 class="text-4xl font-bold text-cyan-300 mb-4">🧮 Procedimiento Detallado</h2>
+            <p class="text-gray-300 mb-8">Cada paso del método de integración numérica explicado claramente</p>
+          </div>
+          
+          <div class="grid gap-8">
+            <!-- Paso 1: Parámetros del método -->
+            <div class="card bg-gradient-to-br from-base-100/10 to-base-100/5 backdrop-blur-lg border-2 border-cyan-500/20 shadow-2xl hover:border-cyan-500/40 transition-all duration-300" data-aos="zoom-in">
+              <div class="card-body p-8">
+                <div class="flex items-center justify-between mb-8">
+                  <div class="flex items-center gap-4">
+                    <div class="avatar placeholder">
+                      <div class="bg-cyan-500 text-white rounded-full w-16 h-16">
+                        <span class="text-2xl font-bold">📐</span>
+                      </div>
+                    </div>
+                    <div>
+                      <h4 class="text-2xl font-bold text-cyan-300">Configuración del Método</h4>
+                      <p class="text-gray-300">Parámetros y función a integrar</p>
+                    </div>
+                  </div>
+                  <div class="badge badge-outline badge-lg border-cyan-500/50 text-cyan-300">
+                    <span>⚙️ Configuración</span>
+                  </div>
+                </div>
+
+                <div class="grid lg:grid-cols-2 gap-6">
+                  <!-- Función y límites -->
+                  <div class="bg-cyan-500/10 p-6 rounded-2xl border-2 border-cyan-500/20">
+                    <div class="flex items-center gap-3 mb-4">
+                      <div class="badge badge-cyan badge-lg">📊 INTEGRAL</div>
+                      <h5 class="font-bold text-lg text-cyan-300">Definición del problema</h5>
+                    </div>
+                    <div class="space-y-3">
+                      <div class="bg-slate-100 border-2 border-slate-300 p-4 rounded-lg">
+                        <p class="text-sm text-slate-600 font-semibold mb-2">Integral a calcular:</p>
+                        <div class="text-lg bg-white p-3 rounded border-2 border-slate-300 shadow-sm">
+                          $$ \int_{a}^{b} f(x) \, dx $$
+                        </div>
+                      </div>
+                      <div class="bg-slate-100 border-2 border-slate-300 p-4 rounded-lg">
+                        <p class="text-sm text-slate-600 font-semibold mb-2">Con los valores:</p>
+                        <div class="text-sm bg-white p-3 rounded border-2 border-slate-300 shadow-sm">
+                          $$ f(x) = {{ funcion_mostrar|safe }} $$
+                          $$ a = {{ limite_a }}, \quad b = {{ limite_b }} $$
+                          $$ n = {{ n_intervalos }} \text{ intervalos} $$
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Método seleccionado -->
+                  <div class="bg-blue-500/10 p-6 rounded-2xl border-2 border-blue-500/20">
+                    <div class="flex items-center gap-3 mb-4">
+                      <div class="badge badge-blue badge-lg">🔧 MÉTODO</div>
+                      <h5 class="font-bold text-lg text-blue-300">{{ metodo_nombre }}</h5>
+                    </div>
+                    <div class="text-center space-y-4">
+                      <div class="bg-slate-100 border-2 border-slate-300 p-4 rounded-lg">
+                        <p class="text-sm text-slate-600 font-semibold mb-2">Fórmula del método:</p>
+                        <div class="text-lg bg-white p-3 rounded border-2 border-slate-300 shadow-sm">
+                          {% if metodo_seleccionado == 1 %}
+                            $$ \int_{a}^{b} f(x) \, dx \approx \frac{h}{2} \left[ f(a) + 2\sum_{i=1}^{n-1} f(x_i) + f(b) \right] $$
+                          {% elif metodo_seleccionado == 2 %}
+                            $$ \int_{a}^{b} f(x) \, dx \approx \frac{h}{3} \left[ f(a) + 4\sum_{i=1,3,5...} f(x_i) + 2\sum_{i=2,4,6...} f(x_i) + f(b) \right] $$
+                          {% else %}
+                            $$ \int_{a}^{b} f(x) \, dx \approx \frac{3h}{8} \left[ f(a) + 3\sum_{i=1}^{n-1} f(x_i) + f(b) \right] $$
+                          {% endif %}
+                        </div>
+                      </div>
+                      <div class="bg-slate-100 border-2 border-slate-300 p-4 rounded-lg">
+                        <p class="text-sm text-slate-600 font-semibold mb-2">Tamaño del paso:</p>
+                        <div class="text-lg bg-white p-3 rounded border-2 border-slate-300 shadow-sm">
+                          $$ h = \frac{b - a}{n} = \frac{ {{ limite_b }} - {{ limite_a }} }{ {{ n_intervalos }} } = {{ h_valor }} $$
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Paso 2: Cálculo de puntos -->
+            <div class="card bg-gradient-to-br from-base-100/10 to-base-100/5 backdrop-blur-lg border-2 border-green-500/20 shadow-2xl hover:border-green-500/40 transition-all duration-300" data-aos="zoom-in" data-aos-delay="100">
+              <div class="card-body p-8">
+                <div class="flex items-center justify-between mb-8">
+                  <div class="flex items-center gap-4">
+                    <div class="avatar placeholder">
+                      <div class="bg-green-500 text-white rounded-full w-16 h-16">
+                        <span class="text-2xl font-bold">📍</span>
+                      </div>
+                    </div>
+                    <div>
+                      <h4 class="text-2xl font-bold text-green-300">Evaluación de Puntos</h4>
+                      <p class="text-gray-300">Cálculo de f(x) en cada punto</p>
+                    </div>
+                  </div>
+                  <div class="badge badge-outline badge-lg border-green-500/50 text-green-300">
+                    <span>🎯 Evaluación</span>
+                  </div>
+                </div>
+
+                <div class="bg-green-500/10 p-6 rounded-2xl border-2 border-green-500/20">
+                  <div class="flex items-center gap-3 mb-4">
+                    <div class="badge badge-green badge-lg">📊 PUNTOS</div>
+                    <h5 class="font-bold text-lg text-green-300">Tabla de evaluaciones</h5>
+                  </div>
+                  
+                  <div class="overflow-x-auto">
+                    <table class="table table-sm bg-white/90 rounded-lg shadow-sm">
+                      <thead class="bg-gradient-to-r from-green-500 to-emerald-600 text-white">
+                        <tr class="text-center">
+                          <th class="font-bold">i</th>
+                          <th class="font-bold">x<sub>i</sub></th>
+                          <th class="font-bold">f(x<sub>i</sub>)</th>
+                          <th class="font-bold">Coeficiente</th>
+                          <th class="font-bold">Contribución</th>
+                        </tr>
+                      </thead>
+                      <tbody class="text-center">
+                        {% for paso in procedimiento %}
+                          {% if paso.tipo == 'evaluacion' %}
+                            <tr class="hover:bg-green-50 transition-colors duration-200">
+                              <td class="font-mono font-bold text-green-600">{{ paso.indice }}</td>
+                              <td class="font-mono font-semibold text-blue-600">{{ paso.x_valor }}</td>
+                              <td class="font-mono font-semibold text-purple-600">{{ paso.f_valor }}</td>
+                              <td class="font-mono font-bold text-orange-600">{{ paso.coeficiente }}</td>
+                              <td class="font-mono font-bold text-red-600">{{ paso.contribucion }}</td>
+                            </tr>
+                          {% endif %}
+                        {% endfor %}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Paso 3: Aplicación de la fórmula -->
+            <div class="card bg-gradient-to-br from-base-100/10 to-base-100/5 backdrop-blur-lg border-2 border-yellow-500/20 shadow-2xl hover:border-yellow-500/40 transition-all duration-300" data-aos="zoom-in" data-aos-delay="200">
+              <div class="card-body p-8">
+                <div class="flex items-center justify-between mb-8">
+                  <div class="flex items-center gap-4">
+                    <div class="avatar placeholder">
+                      <div class="bg-yellow-500 text-white rounded-full w-16 h-16">
+                        <span class="text-2xl font-bold">🧮</span>
+                      </div>
+                    </div>
+                    <div>
+                      <h4 class="text-2xl font-bold text-yellow-300">Cálculo Final</h4>
+                      <p class="text-gray-300">Aplicación de la fórmula de integración</p>
+                    </div>
+                  </div>
+                  <div class="badge badge-outline badge-lg border-yellow-500/50 text-yellow-300">
+                    <span>⚡ Cálculo</span>
+                  </div>
+                </div>
+
+                <div class="bg-yellow-500/10 p-6 rounded-2xl border-2 border-yellow-500/20">
+                  <div class="flex items-center gap-3 mb-4">
+                    <div class="badge badge-yellow badge-lg">⚡ FÓRMULA</div>
+                    <h5 class="font-bold text-lg text-yellow-300">Sustitución de valores</h5>
+                  </div>
+                  
+                  <div class="space-y-4">
+                    <div class="bg-slate-100 border-2 border-slate-300 p-4 rounded-lg">
+                      <p class="text-sm text-slate-600 font-semibold mb-2">Sustitución en la fórmula:</p>
+                      <div class="text-lg bg-white p-4 rounded border-2 border-slate-300 shadow-sm">
+                        {% for paso in procedimiento %}
+                          {% if paso.tipo == 'formula' %}
+                            $$ {{ paso.formula|safe }} $$
+                          {% endif %}
+                        {% endfor %}
+                      </div>
+                    </div>
+                    
+                    <div class="bg-slate-100 border-2 border-slate-300 p-4 rounded-lg">
+                      <p class="text-sm text-slate-600 font-semibold mb-2">Cálculo paso a paso:</p>
+                      <div class="text-sm bg-white p-4 rounded border-2 border-slate-300 shadow-sm">
+                        {% for paso in procedimiento %}
+                          {% if paso.tipo == 'calculo' %}
+                            $$ {{ paso.calculo|safe }} $$
+                          {% endif %}
+                        {% endfor %}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Resultado final -->
+            <div class="card bg-gradient-to-r from-purple-500/20 to-pink-500/20 backdrop-blur-lg border-2 border-purple-500/30 shadow-2xl" data-aos="zoom-in" data-aos-delay="300">
+              <div class="card-body text-center p-8">
+                <h3 class="text-3xl font-bold mb-4 text-purple-300">🏆 Resultado Final</h3>
+                <div class="bg-white/90 p-8 rounded-2xl border-2 border-purple-300 shadow-lg inline-block">
+                  <p class="text-sm text-purple-600 font-semibold mb-4">Aproximación de la integral:</p>
+                  <div class="text-4xl font-bold text-purple-700 mb-2">
+                    $$ \int_{ {{ limite_a }} }^{ {{ limite_b }} } {{ funcion_mostrar|safe }} \, dx \approx {{ resultadoIntegral }} $$
+                  </div>
+                  <div class="text-sm text-purple-600 mt-4">
+                    <p><strong>Método:</strong> {{ metodo_nombre }}</p>
+                    <p><strong>Intervalos:</strong> {{ n_intervalos }}</p>
+                    <p><strong>Tamaño del paso:</strong> h = {{ h_valor }}</p>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -418,9 +635,13 @@
 
     // Inicialización cuando se carga la página
     document.addEventListener('DOMContentLoaded', function() {
-      {% if datos_precargados %}
+      {% if datos_precargados or datos_formulario %}
         // Mostrar notificación de precarga
-        showNotification('✅ Datos cargados desde el historial', 'success');
+        {% if datos_precargados %}
+          showNotification('✅ Datos cargados desde el historial', 'success');
+        {% else %}
+          showNotification('✅ Datos mantenidos del cálculo anterior', 'info');
+        {% endif %}
         
         // Precargar función en el math-field
         const mathInput = document.getElementById('math-input');
@@ -429,26 +650,27 @@
         if (mathInput && funcionHidden) {
           // Dar tiempo al math-field para inicializarse
           setTimeout(() => {
-            const funcionValue = '{{ datos_precargados.funcion|escapejs }}';
-            mathInput.value = funcionValue;
-            funcionHidden.value = funcionValue;
-            
-            // Forzar actualización visual del math-field
-            if (mathInput.setValue) {
-              mathInput.setValue(funcionValue);
+            const funcionValue = '{% if datos_formulario.funcion %}{{ datos_formulario.funcion|escapejs }}{% elif datos_precargados.funcion %}{{ datos_precargados.funcion|escapejs }}{% endif %}';
+            if (funcionValue) {
+              mathInput.value = funcionValue;
+              
+              // Forzar actualización visual del math-field
+              if (mathInput.setValue) {
+                mathInput.setValue(funcionValue);
+              }
+              
+              console.log('Función precargada:', funcionValue);
             }
-            
-            console.log('Función precargada:', funcionValue);
           }, 100);
         }
         
         // Validar que los campos numéricos tengan valores
         setTimeout(() => {
           const camposNumericos = [
-            { elemento: document.querySelector('select[name="metodos_integracion"]'), nombre: 'método', valor: '{{ datos_precargados.metodo }}' },
-            { elemento: document.querySelector('input[name="input_limiteIzquierdo"]'), nombre: 'límite a', valor: '{{ datos_precargados.a }}' },
-            { elemento: document.querySelector('input[name="input_limiteDerecho"]'), nombre: 'límite b', valor: '{{ datos_precargados.b }}' },
-            { elemento: document.querySelector('input[name="input_intervalos"]'), nombre: 'intervalos n', valor: '{{ datos_precargados.n }}' }
+            { elemento: document.querySelector('select[name="metodos_integracion"]'), nombre: 'método', valor: '{% if datos_formulario.metodo %}{{ datos_formulario.metodo }}{% elif datos_precargados.metodo %}{{ datos_precargados.metodo }}{% endif %}' },
+            { elemento: document.querySelector('input[name="input_limiteIzquierdo"]'), nombre: 'límite a', valor: '{% if datos_formulario.limite_izquierdo %}{{ datos_formulario.limite_izquierdo }}{% elif datos_precargados.a %}{{ datos_precargados.a }}{% endif %}' },
+            { elemento: document.querySelector('input[name="input_limiteDerecho"]'), nombre: 'límite b', valor: '{% if datos_formulario.limite_derecho %}{{ datos_formulario.limite_derecho }}{% elif datos_precargados.b %}{{ datos_precargados.b }}{% endif %}' },
+            { elemento: document.querySelector('input[name="input_intervalos"]'), nombre: 'intervalos n', valor: '{% if datos_formulario.intervalos %}{{ datos_formulario.intervalos }}{% elif datos_precargados.n %}{{ datos_precargados.n }}{% endif %}' }
           ];
           
           let camposPrecargados = [];

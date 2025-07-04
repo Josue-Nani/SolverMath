@@ -1,0 +1,553 @@
+{% extends 'admin/admin_base.html' %}
+
+{% block admin_content %}
+<!-- Fondo con partículas animadas -->
+<div class="absolute inset-0 -z-10 overflow-hidden pointer-events-none">
+    <div class="absolute top-20 left-10 w-32 h-32 bg-blue-500/20 rounded-full blur-xl animate-pulse"></div>
+    <div class="absolute bottom-20 right-10 w-40 h-40 bg-purple-500/20 rounded-full blur-xl animate-pulse delay-1000"></div>
+    <div class="absolute top-1/2 left-1/3 w-24 h-24 bg-pink-500/20 rounded-full blur-xl animate-pulse delay-500"></div>
+</div>
+
+<!-- Header con gradiente dinámico -->
+<div class="relative mb-12">
+    <div class="text-center p-8 bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600 rounded-3xl shadow-2xl transform hover:scale-105 transition-all duration-500">
+        <div class="flex items-center justify-center mb-4">
+            <div class="p-4 bg-white/20 rounded-2xl backdrop-blur-sm">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-white animate-spin" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                </svg>
+            </div>
+        </div>
+        <h1 class="text-4xl md:text-5xl font-black text-white mb-2">
+            📊 Estadísticas Avanzadas
+        </h1>
+        <p class="text-xl text-white/90 font-light">
+            Análisis en tiempo real del rendimiento del sistema
+        </p>
+    </div>
+</div>
+
+<!-- Estadísticas principales con efectos 3D -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
+    <!-- Métodos Disponibles -->
+    <div class="group perspective-1000">
+        <div class="relative transform transition-all duration-700 preserve-3d group-hover:rotate-y-6">
+            <div class="stat bg-gradient-to-br from-blue-500 via-blue-600 to-cyan-500 text-white rounded-3xl shadow-2xl transform hover:scale-110 transition-all duration-500 overflow-hidden relative">
+                <div class="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                <div class="stat-figure text-white/30 relative z-10">
+                    <div class="p-3 bg-white/20 rounded-2xl backdrop-blur-sm">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                        </svg>
+                    </div>
+                </div>
+                <div class="stat-title text-white/80 text-sm font-semibold relative z-10">Métodos Activos</div>
+                <div class="stat-value text-5xl font-black relative z-10 bg-gradient-to-r from-white to-cyan-200 bg-clip-text text-transparent">
+                    {{ metodos_stats|length }}
+                </div>
+                <div class="stat-desc text-white/70 relative z-10">Algoritmos disponibles</div>
+                <div class="absolute bottom-0 right-0 w-20 h-20 bg-white/10 rounded-full blur-xl"></div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Usuarios Activos -->
+    <div class="group perspective-1000">
+        <div class="relative transform transition-all duration-700 preserve-3d group-hover:rotate-y-6">
+            <div class="stat bg-gradient-to-br from-emerald-500 via-green-600 to-teal-500 text-white rounded-3xl shadow-2xl transform hover:scale-110 transition-all duration-500 overflow-hidden relative">
+                <div class="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                <div class="stat-figure text-white/30 relative z-10">
+                    <div class="p-3 bg-white/20 rounded-2xl backdrop-blur-sm">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10 animate-bounce" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"/>
+                        </svg>
+                    </div>
+                </div>
+                <div class="stat-title text-white/80 text-sm font-semibold relative z-10">Usuarios Online</div>
+                <div class="stat-value text-5xl font-black relative z-10 bg-gradient-to-r from-white to-green-200 bg-clip-text text-transparent">
+                    {{ usuarios_activos|length }}
+                </div>
+                <div class="stat-desc text-white/70 relative z-10">Usuarios registrados</div>
+                <div class="absolute bottom-0 right-0 w-16 h-16 bg-white/10 rounded-full blur-lg"></div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Perfiles Completos -->
+    <div class="group perspective-1000">
+        <div class="relative transform transition-all duration-700 preserve-3d group-hover:rotate-y-6">
+            <div class="stat bg-gradient-to-br from-orange-500 via-red-500 to-pink-500 text-white rounded-3xl shadow-2xl transform hover:scale-110 transition-all duration-500 overflow-hidden relative">
+                <div class="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                <div class="stat-figure text-white/30 relative z-10">
+                    <div class="p-3 bg-white/20 rounded-2xl backdrop-blur-sm">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                    </div>
+                </div>
+                <div class="stat-title text-white/80 text-sm font-semibold relative z-10">Perfiles Listos</div>
+                <div class="stat-value text-5xl font-black relative z-10 bg-gradient-to-r from-white to-orange-200 bg-clip-text text-transparent">
+                    {{ perfiles_completos }}
+                </div>
+                <div class="stat-desc text-white/70 relative z-10">De {{ total_perfiles }} totales</div>
+                <div class="absolute bottom-0 right-0 w-24 h-24 bg-white/10 rounded-full blur-2xl"></div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Completitud -->
+    <div class="group perspective-1000">
+        <div class="relative transform transition-all duration-700 preserve-3d group-hover:rotate-y-6">
+            <div class="stat bg-gradient-to-br from-purple-500 via-violet-600 to-indigo-500 text-white rounded-3xl shadow-2xl transform hover:scale-110 transition-all duration-500 overflow-hidden relative">
+                <div class="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                <div class="stat-figure text-white/30 relative z-10">
+                    <div class="p-3 bg-white/20 rounded-2xl backdrop-blur-sm">
+                        <div class="radial-progress text-white/60 border-4 border-white/30" style="--value:{{ porcentaje_perfiles_completos }}; --size:3rem;">
+                            <span class="text-xs font-bold">{{ porcentaje_perfiles_completos }}%</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="stat-title text-white/80 text-sm font-semibold relative z-10">Completitud</div>
+                <div class="stat-value text-5xl font-black relative z-10 bg-gradient-to-r from-white to-purple-200 bg-clip-text text-transparent">
+                    {{ porcentaje_perfiles_completos }}%
+                </div>
+                <div class="stat-desc text-white/70 relative z-10">Perfiles completados</div>
+                <div class="absolute top-0 left-0 w-32 h-32 bg-white/10 rounded-full blur-3xl"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Sección de análisis con diseño premium -->
+<div class="grid grid-cols-1 xl:grid-cols-2 gap-8 mb-12">
+    <!-- Métodos más utilizados con diseño premium -->
+    <div class="group">
+        <div class="card bg-gradient-to-br from-slate-800/50 to-slate-900/50 backdrop-blur-xl border border-blue-500/30 shadow-2xl transform hover:scale-105 transition-all duration-500 overflow-hidden relative">
+            <!-- Efecto de brillo -->
+            <div class="absolute inset-0 bg-gradient-to-r from-transparent via-blue-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-1000 transform skew-x-12 translate-x-full group-hover:translate-x-[-100%]"></div>
+            
+            <div class="card-body p-8">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-2xl font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
+                        🔥 Métodos Populares
+                    </h3>
+                    <div class="badge badge-primary badge-lg animate-pulse">TOP</div>
+                </div>
+                
+                <div class="space-y-4">
+                    {% for metodo in metodos_stats %}
+                    <div class="bg-gradient-to-r from-blue-500/10 to-cyan-500/10 p-4 rounded-2xl border border-blue-500/20 hover:border-blue-400/50 transition-all duration-300 group/item">
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="flex items-center gap-3">
+                                <div class="w-3 h-3 bg-gradient-to-r from-blue-400 to-cyan-400 rounded-full animate-pulse"></div>
+                                <span class="font-bold text-white group-hover/item:text-blue-300 transition-colors">{{ metodo.metodo }}</span>
+                            </div>
+                            <span class="badge badge-info">{{ metodo.count }} usos</span>
+                        </div>
+                        
+                        <!-- Barra de progreso animada -->
+                        <div class="relative">
+                            <div class="w-full bg-gray-700 rounded-full h-3 overflow-hidden">
+                                {% if metodos_stats.0.count > 0 %}
+                                <div class="bg-gradient-to-r from-blue-500 to-cyan-400 h-3 rounded-full shadow-lg transform transition-all duration-1000 ease-out hover:shadow-blue-500/50" 
+                                     style="width: {% widthratio metodo.count metodos_stats.0.count 100 %}%">
+                                    <div class="w-full h-full bg-gradient-to-r from-white/20 to-transparent animate-pulse"></div>
+                                </div>
+                                {% endif %}
+                            </div>
+                            <div class="absolute right-0 top-0 mt-4 text-xs text-gray-400">
+                                {% if metodos_stats.0.count > 0 %}
+                                    {% widthratio metodo.count metodos_stats.0.count 100 %}%
+                                {% else %}
+                                    0%
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="text-center py-8">
+                        <div class="text-4xl mb-4">📊</div>
+                        <p class="text-gray-400">No hay datos disponibles</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Usuarios más activos con diseño premium -->
+    <div class="group">
+        <div class="card bg-gradient-to-br from-slate-800/50 to-slate-900/50 backdrop-blur-xl border border-green-500/30 shadow-2xl transform hover:scale-105 transition-all duration-500 overflow-hidden relative">
+            <!-- Efecto de brillo -->
+            <div class="absolute inset-0 bg-gradient-to-r from-transparent via-green-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-1000 transform skew-x-12 translate-x-full group-hover:translate-x-[-100%]"></div>
+            
+            <div class="card-body p-8">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-2xl font-bold bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent">
+                        👑 Usuarios VIP
+                    </h3>
+                    <div class="badge badge-success badge-lg animate-bounce">LIVE</div>
+                </div>
+                
+                <div class="space-y-4">
+                    {% for usuario in usuarios_activos %}
+                    <div class="bg-gradient-to-r from-green-500/10 to-emerald-500/10 p-4 rounded-2xl border border-green-500/20 hover:border-green-400/50 transition-all duration-300 group/user">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-4">
+                                <div class="avatar placeholder">
+                                    <div class="bg-gradient-to-br from-green-500 to-emerald-600 text-white rounded-xl w-12 h-12 shadow-lg">
+                                        <span class="text-lg font-bold">{{ usuario.username|first|upper }}</span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <a href="{% url 'admin_usuario_detalle' usuario.id %}" class="font-bold text-white hover:text-green-300 transition-colors block">
+                                        {{ usuario.username }}
+                                    </a>
+                                    <div class="flex items-center gap-2 mt-1">
+                                        <div class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                                        <span class="text-sm text-gray-400">{{ usuario.operaciones_count }} operaciones</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="text-right">
+                                {% if usuario.perfil %}
+                                    <div class="badge badge-success badge-sm mb-1">✓ Completo</div>
+                                {% else %}
+                                    <div class="badge badge-warning badge-sm mb-1">⚠ Incompleto</div>
+                                {% endif %}
+                                <div class="text-2xl font-bold text-green-400">{{ usuario.operaciones_count }}</div>
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="text-center py-8">
+                        <div class="text-4xl mb-4">👥</div>
+                        <p class="text-gray-400">No hay usuarios activos</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Gráficos con diseño futurista -->
+<div class="grid grid-cols-1 xl:grid-cols-2 gap-8">
+    <!-- Actividad mensual -->
+    <div class="group">
+        <div class="card bg-gradient-to-br from-slate-800/50 to-slate-900/50 backdrop-blur-xl border border-purple-500/30 shadow-2xl transform hover:scale-105 transition-all duration-500 overflow-hidden relative">
+            <!-- Partículas de fondo -->
+            <div class="absolute inset-0 opacity-20">
+                <div class="absolute top-4 left-4 w-2 h-2 bg-purple-400 rounded-full animate-ping"></div>
+                <div class="absolute top-12 right-8 w-1 h-1 bg-blue-400 rounded-full animate-pulse delay-300"></div>
+                <div class="absolute bottom-8 left-12 w-1.5 h-1.5 bg-pink-400 rounded-full animate-ping delay-700"></div>
+            </div>
+            
+            <div class="card-body p-8 relative z-10">
+                <div class="flex items-center justify-between mb-6">
+                    <div>
+                        <h3 class="text-2xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent mb-2">
+                            📈 Tendencias de Actividad
+                        </h3>
+                        <p class="text-sm text-gray-400">Últimos 12 meses de actividad</p>
+                    </div>
+                    <div class="flex gap-2">
+                        <div class="w-3 h-3 bg-purple-500 rounded-full animate-pulse"></div>
+                        <div class="w-3 h-3 bg-pink-500 rounded-full animate-pulse delay-200"></div>
+                        <div class="w-3 h-3 bg-blue-500 rounded-full animate-pulse delay-400"></div>
+                    </div>
+                </div>
+                
+                {% if actividad_mensual %}
+                <div class="bg-gradient-to-br from-gray-900/50 to-gray-800/50 p-6 rounded-2xl border border-purple-500/20">
+                    <canvas id="actividadChart" class="w-full h-80"></canvas>
+                </div>
+                {% else %}
+                <div class="text-center py-16 bg-gradient-to-br from-gray-900/30 to-gray-800/30 rounded-2xl border border-purple-500/20">
+                    <div class="text-6xl mb-4">📊</div>
+                    <h4 class="text-xl font-bold text-purple-300 mb-2">Sin Datos de Actividad</h4>
+                    <p class="text-gray-400">Los gráficos aparecerán cuando haya actividad registrada</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Registro de usuarios -->
+    <div class="group">
+        <div class="card bg-gradient-to-br from-slate-800/50 to-slate-900/50 backdrop-blur-xl border border-orange-500/30 shadow-2xl transform hover:scale-105 transition-all duration-500 overflow-hidden relative">
+            <!-- Efectos luminosos -->
+            <div class="absolute top-0 right-0 w-32 h-32 bg-orange-500/20 rounded-full blur-3xl"></div>
+            <div class="absolute bottom-0 left-0 w-24 h-24 bg-yellow-500/20 rounded-full blur-2xl"></div>
+            
+            <div class="card-body p-8 relative z-10">
+                <div class="flex items-center justify-between mb-6">
+                    <div>
+                        <h3 class="text-2xl font-bold bg-gradient-to-r from-orange-400 to-yellow-400 bg-clip-text text-transparent mb-2">
+                            🚀 Crecimiento de Usuarios
+                        </h3>
+                        <p class="text-sm text-gray-400">Nuevos registros por mes</p>
+                    </div>
+                    <div class="stats stats-vertical stats-compact bg-orange-500/20 border border-orange-500/30">
+                        <div class="stat">
+                            <div class="stat-title text-orange-300 text-xs">Crecimiento</div>
+                            <div class="stat-value text-orange-400 text-lg">+{{ usuarios_activos|length }}</div>
+                        </div>
+                    </div>
+                </div>
+                
+                {% if usuarios_por_mes %}
+                <div class="bg-gradient-to-br from-gray-900/50 to-gray-800/50 p-6 rounded-2xl border border-orange-500/20">
+                    <canvas id="usuariosChart" class="w-full h-80"></canvas>
+                </div>
+                {% else %}
+                <div class="text-center py-16 bg-gradient-to-br from-gray-900/30 to-gray-800/30 rounded-2xl border border-orange-500/20">
+                    <div class="text-6xl mb-4">👥</div>
+                    <h4 class="text-xl font-bold text-orange-300 mb-2">Sin Datos de Registro</h4>
+                    <p class="text-gray-400">Los gráficos de crecimiento aparecerán pronto</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Scripts mejorados para los gráficos -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Configuración global de Chart.js con tema premium
+    Chart.defaults.color = '#E5E7EB';
+    Chart.defaults.borderColor = '#374151';
+    Chart.defaults.font.family = "'Inter', 'system-ui', 'sans-serif'";
+    Chart.defaults.font.size = 12;
+    Chart.defaults.plugins.legend.labels.usePointStyle = true;
+    Chart.defaults.plugins.legend.labels.padding = 20;
+    
+    // Animación de entrada para las cards
+    document.addEventListener('DOMContentLoaded', function() {
+        const cards = document.querySelectorAll('.card, .stat');
+        cards.forEach((card, index) => {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(20px)';
+            setTimeout(() => {
+                card.style.transition = 'all 0.6s ease-out';
+                card.style.opacity = '1';
+                card.style.transform = 'translateY(0)';
+            }, index * 100);
+        });
+    });
+    
+    // Gráfico de actividad mensual con diseño premium
+    {% if actividad_mensual %}
+    const actividadData = {{ actividad_mensual|safe }};
+    const actividadCtx = document.getElementById('actividadChart').getContext('2d');
+    
+    // Gradiente para el área
+    const gradientFill = actividadCtx.createLinearGradient(0, 0, 0, 400);
+    gradientFill.addColorStop(0, 'rgba(147, 51, 234, 0.3)');
+    gradientFill.addColorStop(0.5, 'rgba(147, 51, 234, 0.1)');
+    gradientFill.addColorStop(1, 'rgba(147, 51, 234, 0)');
+    
+    new Chart(actividadCtx, {
+        type: 'line',
+        data: {
+            labels: actividadData.map(item => item.month),
+            datasets: [{
+                label: 'Operaciones Realizadas',
+                data: actividadData.map(item => item.count),
+                borderColor: 'rgb(147, 51, 234)',
+                backgroundColor: gradientFill,
+                borderWidth: 3,
+                tension: 0.4,
+                fill: true,
+                pointBackgroundColor: 'rgb(147, 51, 234)',
+                pointBorderColor: '#ffffff',
+                pointBorderWidth: 2,
+                pointRadius: 6,
+                pointHoverRadius: 8,
+                pointHoverBackgroundColor: 'rgb(168, 85, 247)',
+                pointHoverBorderColor: '#ffffff',
+                pointHoverBorderWidth: 3
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: {
+                intersect: false,
+                mode: 'index'
+            },
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'top',
+                    labels: {
+                        color: '#E5E7EB',
+                        font: {
+                            size: 14,
+                            weight: '600'
+                        }
+                    }
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                    titleColor: '#E5E7EB',
+                    bodyColor: '#E5E7EB',
+                    borderColor: 'rgb(147, 51, 234)',
+                    borderWidth: 1,
+                    cornerRadius: 10,
+                    displayColors: false
+                }
+            },
+            scales: {
+                x: {
+                    grid: {
+                        color: '#374151',
+                        drawBorder: false
+                    },
+                    ticks: {
+                        color: '#9CA3AF',
+                        font: {
+                            size: 12
+                        }
+                    }
+                },
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: '#374151',
+                        drawBorder: false
+                    },
+                    ticks: {
+                        color: '#9CA3AF',
+                        font: {
+                            size: 12
+                        }
+                    }
+                }
+            },
+            animation: {
+                duration: 2000,
+                easing: 'easeInOutQuart'
+            }
+        }
+    });
+    {% endif %}
+    
+    // Gráfico de usuarios por mes con diseño premium
+    {% if usuarios_por_mes %}
+    const usuariosData = {{ usuarios_por_mes|safe }};
+    const usuariosCtx = document.getElementById('usuariosChart').getContext('2d');
+    
+    // Gradiente para las barras
+    const gradientBar = usuariosCtx.createLinearGradient(0, 0, 0, 400);
+    gradientBar.addColorStop(0, 'rgba(249, 115, 22, 0.9)');
+    gradientBar.addColorStop(1, 'rgba(251, 191, 36, 0.6)');
+    
+    new Chart(usuariosCtx, {
+        type: 'bar',
+        data: {
+            labels: usuariosData.map(item => item.month),
+            datasets: [{
+                label: 'Nuevos Usuarios',
+                data: usuariosData.map(item => item.count),
+                backgroundColor: gradientBar,
+                borderColor: 'rgb(249, 115, 22)',
+                borderWidth: 2,
+                borderRadius: 8,
+                borderSkipped: false,
+                hoverBackgroundColor: 'rgba(251, 146, 60, 0.8)',
+                hoverBorderColor: 'rgb(251, 146, 60)',
+                hoverBorderWidth: 3
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'top',
+                    labels: {
+                        color: '#E5E7EB',
+                        font: {
+                            size: 14,
+                            weight: '600'
+                        }
+                    }
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                    titleColor: '#E5E7EB',
+                    bodyColor: '#E5E7EB',
+                    borderColor: 'rgb(249, 115, 22)',
+                    borderWidth: 1,
+                    cornerRadius: 10,
+                    displayColors: false
+                }
+            },
+            scales: {
+                x: {
+                    grid: {
+                        color: '#374151',
+                        drawBorder: false
+                    },
+                    ticks: {
+                        color: '#9CA3AF',
+                        font: {
+                            size: 12
+                        }
+                    }
+                },
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: '#374151',
+                        drawBorder: false
+                    },
+                    ticks: {
+                        color: '#9CA3AF',
+                        font: {
+                            size: 12
+                        }
+                    }
+                }
+            },
+            animation: {
+                duration: 2000,
+                easing: 'easeInOutBounce'
+            }
+        }
+    });
+    {% endif %}
+</script>
+
+<!-- Estilos adicionales para efectos 3D -->
+<style>
+    .perspective-1000 {
+        perspective: 1000px;
+    }
+    
+    .preserve-3d {
+        transform-style: preserve-3d;
+    }
+    
+    .rotate-y-6 {
+        transform: rotateY(6deg);
+    }
+    
+    @keyframes float {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-10px); }
+    }
+    
+    .float {
+        animation: float 3s ease-in-out infinite;
+    }
+    
+    .hover\:shadow-neon:hover {
+        box-shadow: 0 0 30px rgba(147, 51, 234, 0.6);
+    }
+</style>
+{% endblock %}

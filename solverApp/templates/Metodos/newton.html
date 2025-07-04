@@ -47,19 +47,6 @@
               {% endif %}
             </h2>
             
-            {% if datos_precargados %}
-              <!-- DEBUG: Mostrar datos recibidos -->
-              <div class="alert alert-info mb-4">
-                <div class="text-sm">
-                  <strong>DEBUG - Datos recibidos:</strong><br>
-                  Función: "{{ datos_precargados.funcion }}"<br>
-                  x0: "{{ datos_precargados.x0 }}" (longitud: {{ datos_precargados.x0|length }})<br>
-                  Tolerancia: "{{ datos_precargados.tolerancia }}" (longitud: {{ datos_precargados.tolerancia|length }})<br>
-                  Decimales: "{{ datos_precargados.decimales }}"
-                </div>
-              </div>
-            {% endif %}
-            
             <form method="POST" onsubmit="return prepararEnvio()" class="space-y-6" id="newton-form">
               {% csrf_token %}
               
@@ -97,7 +84,7 @@
                   <input type="number" step="any" name="x0" 
                     class="input input-bordered input-primary font-mono" 
                     placeholder="1.5" 
-                    value="{% if datos_precargados and datos_precargados.x0 %}{{ datos_precargados.x0 }}{% endif %}"
+                    value="{% if datos_formulario.x0 %}{{ datos_formulario.x0 }}{% elif datos_precargados and datos_precargados.x0 %}{{ datos_precargados.x0 }}{% endif %}"
                     required>
                 </div>
                 
@@ -108,7 +95,7 @@
                   <input type="number" step="any" name="tolerancia" 
                     class="input input-bordered input-primary font-mono" 
                     placeholder="0.0001" 
-                    value="{% if datos_precargados and datos_precargados.tolerancia %}{{ datos_precargados.tolerancia }}{% endif %}"
+                    value="{% if datos_formulario.tolerancia %}{{ datos_formulario.tolerancia }}{% elif datos_precargados and datos_precargados.tolerancia %}{{ datos_precargados.tolerancia }}{% endif %}"
                     required>
                 </div>
                 
@@ -117,7 +104,7 @@
                     <span class="label-text font-semibold">🔢 Decimales</span>
                   </label>
                   <input type="number" name="decimales" 
-                    value="{% if datos_precargados %}{{ datos_precargados.decimales }}{% else %}6{% endif %}" 
+                    value="{% if datos_formulario.decimales %}{{ datos_formulario.decimales }}{% elif datos_precargados %}{{ datos_precargados.decimales }}{% else %}6{% endif %}" 
                     min="1" max="15"
                     class="input input-bordered input-primary font-mono" required>
                 </div>
@@ -250,55 +237,269 @@
         <div class="badge badge-primary badge-lg">{{ procedimiento|length }} iteraciones realizadas</div>
       </div>
       
-      <!-- Tabla de iteraciones -->
+      <!-- Tabla de iteraciones mejorada -->
       <div class="card bg-base-100 shadow-xl overflow-hidden">
         <div class="card-body p-0">
           <div class="overflow-x-auto">
-            <table class="table table-zebra table-lg">
-              <thead class="bg-primary text-primary-content">
+            <table class="table table-lg">
+              <thead class="bg-gradient-to-r from-primary to-secondary text-white">
                 <tr class="text-center">
-                  <th class="text-lg">🔢 Iteración</th>
-                  <th class="text-lg">📍 x₀</th>
-                  <th class="text-lg">📊 f(x₀)</th>
-                  <th class="text-lg">📈 f'(x₀)</th>
-                  <th class="text-lg">🎯 x₁</th>
-                  <th class="text-lg">📏 Error</th>
+                  <th class="text-lg font-bold py-4">🔢 Iteración</th>
+                  <th class="text-lg font-bold py-4">📍 x<sub>i</sub></th>
+                  <th class="text-lg font-bold py-4">📊 f(x<sub>i</sub>)</th>
+                  <th class="text-lg font-bold py-4">📈 f'(x<sub>i</sub>)</th>
+                  <th class="text-lg font-bold py-4">🎯 x<sub>i+1</sub></th>
+                  <th class="text-lg font-bold py-4">📏 Error</th>
                 </tr>
               </thead>
-              <tbody class="text-center font-mono">
+              <tbody class="text-center">
                 {% for paso in procedimiento %}
-                <tr class="hover:bg-primary/10 transition-colors duration-200">
-                  <td class="font-bold text-primary">{{ paso.iteracion }}</td>
-                  <td>{{ paso.x0 }}</td>
-                  <td class="text-success">{{ paso.f_x0 }}</td>
-                  <td class="text-info">{{ paso.f_prime_x0 }}</td>
-                  <td class="text-warning">{{ paso.x1 }}</td>
-                  <td class="text-error">{{ paso.tolerancia }}</td>
+                <tr class="hover:bg-primary/5 transition-all duration-300 border-b border-base-300">
+                  <td class="py-4">
+                    <div class="badge badge-primary badge-lg font-bold text-lg px-4 py-2">{{ paso.iteracion }}</div>
+                  </td>
+                  <td class="font-mono text-lg font-semibold text-info py-4">{{ paso.x0 }}</td>
+                  <td class="font-mono text-lg text-success py-4">{{ paso.f_x0 }}</td>
+                  <td class="font-mono text-lg text-secondary py-4">{{ paso.f_prime_x0 }}</td>
+                  <td class="font-mono text-lg font-bold text-warning py-4">{{ paso.x1 }}</td>
+                  <td class="py-4">
+                    <div class="font-mono text-lg text-error font-semibold">{{ paso.tolerancia }}</div>
+                    {% if paso.tolerancia <= 0.0001 %}
+                      <div class="badge badge-success badge-sm mt-1">Converge ✓</div>
+                    {% endif %}
+                  </td>
                 </tr>
                 {% endfor %}
               </tbody>
             </table>
           </div>
-        </div>
-      </div>
-
-      <!-- Fórmulas aplicadas -->
-      <div class="mt-8">
-        <h3 class="text-3xl font-bold text-center mb-6">🧮 Fórmulas Aplicadas</h3>
-        <div class="grid gap-4">
-          {% for paso in procedimiento %}
-          <div class="card bg-base-100 shadow-lg" data-aos="flip-left" data-aos-delay="{{ forloop.counter0|add:'100' }}">
-            <div class="card-body">
-              <div class="flex items-center justify-between mb-4">
-                <div class="badge badge-primary badge-lg">Iteración {{ paso.iteracion }}</div>
-                <div class="text-base-content/70 text-sm">Paso {{ forloop.counter }}</div>
+          
+          <!-- Leyenda de colores -->
+          <div class="bg-base-200 p-4 border-t">
+            <h4 class="font-semibold mb-3 text-center">📋 Leyenda de la tabla:</h4>
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
+              <div class="flex items-center gap-2">
+                <span class="w-4 h-4 bg-info rounded"></span>
+                <span><strong>x<sub>i</sub>:</strong> Aproximación actual</span>
               </div>
-              <div class="math-formula-highlight text-center overflow-x-auto">
-                $$ {{ paso.formula }} $$
+              <div class="flex items-center gap-2">
+                <span class="w-4 h-4 bg-success rounded"></span>
+                <span><strong>f(x<sub>i</sub>):</strong> Valor de la función</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="w-4 h-4 bg-secondary rounded"></span>
+                <span><strong>f'(x<sub>i</sub>):</strong> Derivada en x<sub>i</sub></span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="w-4 h-4 bg-warning rounded"></span>
+                <span><strong>x<sub>i+1</sub>:</strong> Nueva aproximación</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="w-4 h-4 bg-error rounded"></span>
+                <span><strong>Error:</strong> Error relativo</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="w-4 h-4 bg-success rounded"></span>
+                <span><strong>Converge:</strong> Tolerancia alcanzada</span>
               </div>
             </div>
           </div>
+        </div>
+      </div>
+
+      <!-- Fórmulas aplicadas REDISEÑADAS -->
+      <div class="mt-8">
+        <h3 class="text-3xl font-bold text-center mb-6">🧮 Paso a Paso Detallado</h3>
+        <p class="text-center text-base-content/70 mb-8">Cada iteración explicada de forma simple y clara</p>
+        
+        <div class="grid gap-8">
+          {% for paso in procedimiento %}
+          <div class="card bg-gradient-to-br from-base-100 to-base-200 shadow-2xl border-2 border-primary/20 hover:border-primary/40 transition-all duration-300" data-aos="zoom-in" data-aos-delay="{{ forloop.counter0|add:'100' }}">
+            <div class="card-body p-8">
+              
+              <!-- Header de la iteración -->
+              <div class="flex items-center justify-between mb-8">
+                <div class="flex items-center gap-4">
+                  <div class="avatar placeholder">
+                    <div class="bg-primary text-primary-content rounded-full w-16 h-16">
+                      <span class="text-2xl font-bold">{{ paso.iteracion }}</span>
+                    </div>
+                  </div>
+                  <div>
+                    <h4 class="text-2xl font-bold">Iteración {{ paso.iteracion }}</h4>
+                    <p class="text-base-content/70">Aproximación número {{ forloop.counter }}</p>
+                  </div>
+                </div>
+                <div class="badge badge-outline badge-lg">
+                  {% if paso.tolerancia <= 0.0001 %}
+                    <span class="text-success">🎯 Converge</span>
+                  {% else %}
+                    <span class="text-warning">🔄 Calculando</span>
+                  {% endif %}
+                </div>
+              </div>
+
+              <!-- Grid de pasos -->
+              <div class="grid lg:grid-cols-2 gap-6">
+                
+                <!-- Paso 1: Datos de entrada -->
+                <div class="bg-info/10 p-6 rounded-2xl border-2 border-info/20">
+                  <div class="flex items-center gap-3 mb-4">
+                    <div class="badge badge-info badge-lg">📥 DATOS</div>
+                    <h5 class="font-bold text-lg">Valores conocidos</h5>
+                  </div>
+                  <div class="space-y-3">
+                    <div class="bg-slate-100 border-2 border-slate-300 p-3 rounded-lg">
+                      <span class="text-sm text-slate-600 font-semibold">Punto actual:</span>
+                      <div class="text-xl font-mono font-bold text-info bg-white p-2 rounded border-2 border-slate-300 shadow-sm">x{{ paso.iteracion }} = {{ paso.x0 }}</div>
+                    </div>
+                    <div class="bg-slate-100 border-2 border-slate-300 p-3 rounded-lg">
+                      <span class="text-sm text-slate-600 font-semibold">Función evaluada:</span>
+                      <div class="text-xl font-mono font-bold text-success bg-white p-2 rounded border-2 border-slate-300 shadow-sm">f({{ paso.x0 }}) = {{ paso.f_x0 }}</div>
+                    </div>
+                    <div class="bg-slate-100 border-2 border-slate-300 p-3 rounded-lg">
+                      <span class="text-sm text-slate-600 font-semibold">Derivada evaluada:</span>
+                      <div class="text-xl font-mono font-bold text-secondary bg-white p-2 rounded border-2 border-slate-300 shadow-sm">f'({{ paso.x0 }}) = {{ paso.f_prime_x0 }}</div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Paso 2: Aplicación de la fórmula -->
+                <div class="bg-warning/10 p-6 rounded-2xl border-2 border-warning/20">
+                  <div class="flex items-center gap-3 mb-4">
+                    <div class="badge badge-warning badge-lg">🔧 FÓRMULA</div>
+                    <h5 class="font-bold text-lg">Newton-Raphson</h5>
+                  </div>
+                  <div class="text-center space-y-4">
+                    <div class="bg-slate-100 border-2 border-slate-300 p-4 rounded-lg">
+                      <p class="text-sm text-slate-600 font-semibold mb-2">Fórmula general:</p>
+                      <div class="text-lg font-bold bg-white p-3 rounded border-2 border-slate-300 shadow-sm">
+                        $$ x_{n+1} = x_n - \frac{f(x_n)}{f'(x_n)} $$
+                      </div>
+                    </div>
+                    <div class="divider">↓ Sustituyendo valores ↓</div>
+                    <div class="bg-slate-100 border-2 border-slate-300 p-4 rounded-lg">
+                      <p class="text-sm text-slate-600 font-semibold mb-2">Con nuestros datos:</p>
+                      <div class="text-lg font-bold bg-white p-3 rounded border-2 border-slate-300 shadow-sm">
+                        $$ x_{{ paso.iteracion|add:1 }} = {{ paso.x0 }} - \frac{ {{ paso.f_x0 }} }{ {{ paso.f_prime_x0 }} } $$
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+
+              <!-- Resultado -->
+              <div class="mt-6 bg-success/10 p-6 rounded-2xl border-2 border-success/20">
+                <div class="flex items-center gap-3 mb-4">
+                  <div class="badge badge-success badge-lg">✨ RESULTADO</div>
+                  <h5 class="font-bold text-lg">Nueva aproximación</h5>
+                </div>
+                <div class="text-center">
+                  <div class="bg-slate-100 border-2 border-slate-300 p-6 rounded-xl inline-block">
+                    <p class="text-sm text-slate-600 font-semibold mb-2">Próximo punto:</p>
+                    <div class="text-3xl font-bold text-success bg-white p-3 rounded border-2 border-slate-300 shadow-sm">
+                      $$ x_{{ paso.iteracion|add:1 }} = {{ paso.x1 }} $$
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Error de convergencia -->
+              <div class="mt-6 bg-error/10 p-6 rounded-2xl border-2 border-error/20">
+                <div class="flex items-center gap-3 mb-4">
+                  <div class="badge badge-error badge-lg">📏 ERROR</div>
+                  <h5 class="font-bold text-lg">¿Qué tan cerca estamos?</h5>
+                </div>
+                <div class="grid md:grid-cols-2 gap-4">
+                  <div class="bg-slate-100 border-2 border-slate-300 p-4 rounded-lg">
+                    <p class="text-sm text-slate-600 font-semibold mb-2">Fórmula del error relativo:</p>
+                    <div class="text-sm bg-white p-3 rounded border-2 border-slate-300 shadow-sm">
+                      $$ \text{Error} = \left| \frac{x_{{ paso.iteracion|add:1 }} - x_{{ paso.iteracion }}}{x_{{ paso.iteracion|add:1 }}} \right| $$
+                    </div>
+                  </div>
+                  <div class="bg-slate-100 border-2 border-slate-300 p-4 rounded-lg">
+                    <p class="text-sm text-slate-600 font-semibold mb-2">Sustituyendo valores:</p>
+                    <div class="text-sm bg-white p-3 rounded border-2 border-slate-300 shadow-sm">
+                      $$ \text{Error} = \left| \frac{ {{ paso.x1 }} - {{ paso.x0 }} }{ {{ paso.x1 }} } \right| = {{ paso.tolerancia }} $$
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- Interpretación del error -->
+                <div class="mt-4 p-4 rounded-lg {% if paso.tolerancia <= 0.0001 %}bg-success/20 border border-success/30{% else %}bg-warning/20 border border-warning/30{% endif %}">
+                  <div class="flex items-center gap-3">
+                    {% if paso.tolerancia <= 0.0001 %}
+                      <span class="text-2xl">🎯</span>
+                      <div>
+                        <p class="font-bold text-success">¡Excelente convergencia!</p>
+                        <p class="text-sm text-success/70">El error es menor a 0.0001, hemos encontrado una buena aproximación.</p>
+                      </div>
+                    {% else %}
+                      <span class="text-2xl">🔄</span>
+                      <div>
+                        <p class="font-bold text-warning">Necesitamos más iteraciones</p>
+                        <p class="text-sm text-warning/70">El error aún es grande ({{ paso.tolerancia }}), continuamos calculando.</p>
+                      </div>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+
+              <!-- Progress bar visual -->
+              <div class="mt-6">
+                <div class="flex items-center gap-4">
+                  <span class="text-sm font-semibold">Progreso:</span>
+                  <div class="flex-1">
+                    {% if paso.tolerancia <= 0.0001 %}
+                      <progress class="progress progress-success w-full" value="100" max="100"></progress>
+                    {% elif paso.tolerancia <= 0.001 %}
+                      <progress class="progress progress-warning w-full" value="80" max="100"></progress>
+                    {% elif paso.tolerancia <= 0.01 %}
+                      <progress class="progress progress-info w-full" value="60" max="100"></progress>
+                    {% else %}
+                      <progress class="progress progress-error w-full" value="30" max="100"></progress>
+                    {% endif %}
+                  </div>
+                  <span class="text-sm font-mono">{{ paso.tolerancia }}</span>
+                </div>
+              </div>
+
+            </div>
+          </div>
           {% endfor %}
+        </div>
+
+        <!-- Resumen final -->
+        <div class="mt-8 card bg-gradient-to-r from-primary to-secondary text-white shadow-2xl">
+          <div class="card-body text-center">
+            <h3 class="text-2xl font-bold mb-4">🏆 Resumen del Proceso</h3>
+            <div class="stats stats-horizontal shadow bg-white/10 rounded-xl">
+              <div class="stat">
+                <div class="stat-title text-white/70">Total de iteraciones</div>
+                <div class="stat-value text-white">{{ procedimiento|length }}</div>
+                <div class="stat-desc text-white/70">pasos realizados</div>
+              </div>
+              <div class="stat">
+                <div class="stat-title text-white/70">Valor inicial</div>
+                <div class="stat-value text-white text-lg">
+                  {% for paso in procedimiento %}
+                    {% if forloop.first %}{{ paso.x0 }}{% endif %}
+                  {% endfor %}
+                </div>
+                <div class="stat-desc text-white/70">punto de partida</div>
+              </div>
+              <div class="stat">
+                <div class="stat-title text-white/70">Resultado final</div>
+                <div class="stat-value text-white text-lg">
+                  {% for paso in procedimiento %}
+                    {% if forloop.last %}{{ paso.x1 }}{% endif %}
+                  {% endfor %}
+                </div>
+                <div class="stat-desc text-white/70">raíz encontrada</div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -452,10 +653,12 @@
 
     // Eventos cuando el DOM está listo
     document.addEventListener('DOMContentLoaded', function () {
-      // Precargar datos del historial si están disponibles
-      {% if datos_precargados %}
-        // Mostrar notificación de precarga
-        mostrarNotificacion('✅ Datos cargados desde el historial', 'success');
+      // Precargar datos del historial o del formulario previo
+      {% if datos_precargados or datos_formulario %}
+        // Mostrar notificación solo si los datos vienen del historial
+        {% if es_desde_historial %}
+          mostrarNotificacion('✅ Datos cargados desde el historial', 'success');
+        {% endif %}
         
         // Precargar función en el math-field
         const mathInput = document.getElementById('math-input');
@@ -464,25 +667,27 @@
         if (mathInput && funcionHidden) {
           // Dar tiempo al math-field para inicializarse completamente
           setTimeout(() => {
-            const funcionValue = '{{ datos_precargados.funcion|escapejs }}';
-            mathInput.value = funcionValue;
-            funcionHidden.value = funcionValue;
-            
-            // Forzar actualización visual del math-field
-            if (mathInput.setValue) {
-              mathInput.setValue(funcionValue);
+            const funcionValue = '{% if datos_formulario.funcion %}{{ datos_formulario.funcion|escapejs }}{% elif datos_precargados.funcion %}{{ datos_precargados.funcion|escapejs }}{% endif %}';
+            if (funcionValue) {
+              mathInput.value = funcionValue;
+              funcionHidden.value = funcionValue;
+              
+              // Forzar actualización visual del math-field
+              if (mathInput.setValue) {
+                mathInput.setValue(funcionValue);
+              }
+              
+              console.log('Función precargada:', funcionValue);
             }
-            
-            console.log('Función precargada:', funcionValue);
           }, 100);
         }
         
         // Validar que los campos numéricos tengan valores
         setTimeout(() => {
           const camposNumericos = [
-            { elemento: document.querySelector('input[name="x0"]'), nombre: 'x0', valor: '{{ datos_precargados.x0 }}' },
-            { elemento: document.querySelector('input[name="tolerancia"]'), nombre: 'tolerancia', valor: '{{ datos_precargados.tolerancia }}' },
-            { elemento: document.querySelector('input[name="decimales"]'), nombre: 'decimales', valor: '{{ datos_precargados.decimales }}' }
+            { elemento: document.querySelector('input[name="x0"]'), nombre: 'x0', valor: '{% if datos_formulario.x0 %}{{ datos_formulario.x0 }}{% elif datos_precargados.x0 %}{{ datos_precargados.x0 }}{% endif %}' },
+            { elemento: document.querySelector('input[name="tolerancia"]'), nombre: 'tolerancia', valor: '{% if datos_formulario.tolerancia %}{{ datos_formulario.tolerancia }}{% elif datos_precargados.tolerancia %}{{ datos_precargados.tolerancia }}{% endif %}' },
+            { elemento: document.querySelector('input[name="decimales"]'), nombre: 'decimales', valor: '{% if datos_formulario.decimales %}{{ datos_formulario.decimales }}{% elif datos_precargados.decimales %}{{ datos_precargados.decimales }}{% endif %}' }
           ];
           
           let camposPrecargados = [];
@@ -549,12 +754,6 @@
       }, 1500);
 
       console.log('🚀 Newton-Raphson Calculator inicializado correctamente');
-    });
-
-    // Manejo de errores globales
-    window.addEventListener('error', function(e) {
-      console.error('Error capturado:', e.error);
-      mostrarNotificacion('Ha ocurrido un error inesperado', 'error');
     });
 
     // Eliminar cualquier evento beforeunload existente
