@@ -1,139 +1,418 @@
 {% extends 'admin/admin_base.html' %}
 
+<!-- Font Awesome CDN -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
 {% block admin_content %}
 <style>
-    .particles-background {
+    /* Variables CSS para tema oscuro moderno */
+    :root {
+        --primary-color: #10b981;
+        --primary-hover: #059669;
+        --secondary-color: #8b5cf6;
+        --accent-color: #f59e0b;
+        --background-dark: #0f172a;
+        --background-card: #1e293b;
+        --background-card-hover: #334155;
+        --text-primary: #f8fafc;
+        --text-secondary: #cbd5e1;
+        --text-muted: #64748b;
+        --border-color: #334155;
+        --border-accent: #10b981;
+        --shadow-color: rgba(16, 185, 129, 0.2);
+        --gradient-1: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        --gradient-2: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+        --gradient-3: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    }
+
+    /* Fondo animado con partículas */
+    .animated-background {
         position: fixed;
         top: 0;
         left: 0;
         width: 100%;
         height: 100%;
-        pointer-events: none;
-        z-index: -1;
-        background: radial-gradient(ellipse at bottom, #0f172a 0%, #1e293b 100%);
-    }
-    
-    .particle {
-        position: absolute;
-        width: 2px;
-        height: 2px;
-        background: #06b6d4;
-        border-radius: 50%;
-        animation: float 6s ease-in-out infinite;
-        opacity: 0.3;
-    }
-    
-    @keyframes float {
-        0%, 100% { transform: translateY(0px) rotate(0deg); }
-        50% { transform: translateY(-20px) rotate(180deg); }
-    }
-    
-    .card-premium {
-        background: linear-gradient(135deg, rgba(6, 182, 212, 0.1) 0%, rgba(37, 99, 235, 0.1) 100%);
-        border: 1px solid rgba(6, 182, 212, 0.3);
-        backdrop-filter: blur(10px);
-        box-shadow: 0 10px 30px rgba(6, 182, 212, 0.2);
-        transform-style: preserve-3d;
-        transition: all 0.3s ease;
-    }
-    
-    .card-premium:hover {
-        transform: translateY(-5px) rotateX(5deg);
-        box-shadow: 0 20px 40px rgba(6, 182, 212, 0.3);
-    }
-    
-    .glassmorphism {
-        background: rgba(15, 23, 42, 0.7);
-        backdrop-filter: blur(20px);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-    }
-    
-    .input-premium {
-        background: rgba(255, 255, 255, 0.05);
-        border: 1px solid rgba(6, 182, 212, 0.3);
-        box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
-        transition: all 0.3s ease;
-    }
-    
-    .input-premium:focus {
-        border-color: #06b6d4;
-        box-shadow: 0 0 20px rgba(6, 182, 212, 0.5);
-    }
-    
-    .btn-premium {
-        background: linear-gradient(135deg, #06b6d4 0%, #2563eb 100%);
-        border: none;
-        box-shadow: 0 4px 15px rgba(6, 182, 212, 0.4);
-        transition: all 0.3s ease;
-    }
-    
-    .btn-premium:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(6, 182, 212, 0.6);
-    }
-    
-    .table-premium {
-        background: rgba(15, 23, 42, 0.8);
-        backdrop-filter: blur(15px);
-        border-radius: 12px;
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+        z-index: -2;
         overflow: hidden;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
     }
-    
-    .table-premium thead {
-        background: linear-gradient(135deg, #06b6d4 0%, #2563eb 100%);
-        position: relative;
-    }
-    
-    .table-premium thead::after {
+
+    .animated-background::before {
         content: '';
         position: absolute;
-        bottom: 0;
+        top: 0;
         left: 0;
         right: 0;
-        height: 2px;
-        background: linear-gradient(90deg, transparent, #06b6d4, transparent);
+        bottom: 0;
+        background-image: 
+            radial-gradient(circle at 20% 50%, rgba(16, 185, 129, 0.1) 0%, transparent 50%),
+            radial-gradient(circle at 80% 20%, rgba(139, 92, 246, 0.1) 0%, transparent 50%),
+            radial-gradient(circle at 40% 80%, rgba(245, 158, 11, 0.1) 0%, transparent 50%);
+        animation: backgroundMove 20s ease-in-out infinite;
     }
-    
-    .table-premium tbody tr {
+
+    @keyframes backgroundMove {
+        0%, 100% { transform: translateX(0) translateY(0) rotate(0deg); }
+        33% { transform: translateX(-20px) translateY(-10px) rotate(2deg); }
+        66% { transform: translateX(20px) translateY(10px) rotate(-2deg); }
+    }
+
+    /* Contenedor principal */
+    .main-container {
+        min-height: 100vh;
+        padding: 2rem 1rem;
+        background: transparent;
+        position: relative;
+        z-index: 1;
+    }
+
+    /* Header Section */
+    .header-section {
+        text-align: center;
+        margin-bottom: 3rem;
+        animation: fadeInUp 0.8s ease-out;
+    }
+
+    .header-title {
+        font-size: 3rem;
+        font-weight: 800;
+        background: var(--gradient-1);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 1rem;
+        text-shadow: 0 0 30px rgba(16, 185, 129, 0.3);
+    }
+
+    .header-subtitle {
+        font-size: 1.2rem;
+        color: var(--text-secondary);
+        font-weight: 300;
+        max-width: 600px;
+        margin: 0 auto;
+        line-height: 1.6;
+    }
+
+    /* Stats Cards */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 3rem;
+        animation: fadeInUp 0.8s ease-out 0.2s both;
+    }
+
+    .stat-card {
+        background: rgba(30, 41, 59, 0.8);
+        backdrop-filter: blur(20px);
+        border: 1px solid var(--border-color);
+        border-radius: 1rem;
+        padding: 2rem;
+        text-align: center;
         transition: all 0.3s ease;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    }
-    
-    .table-premium tbody tr:hover {
-        background: rgba(6, 182, 212, 0.1);
-        transform: scale(1.02);
-    }
-    
-    .animate-fade-in {
-        animation: fadeIn 0.6s ease-out;
-    }
-    
-    @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(20px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-    
-    .animate-slide-up {
-        animation: slideUp 0.8s ease-out;
-    }
-    
-    @keyframes slideUp {
-        from { opacity: 0; transform: translateY(50px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-    
-    .badge-premium {
-        background: linear-gradient(135deg, #06b6d4 0%, #2563eb 100%);
-        color: white;
-        box-shadow: 0 4px 15px rgba(6, 182, 212, 0.4);
-        border: none;
         position: relative;
         overflow: hidden;
     }
-    
-    .badge-premium::before {
+
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: var(--gradient-1);
+        transition: all 0.3s ease;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 40px rgba(16, 185, 129, 0.2);
+        border-color: var(--border-accent);
+    }
+
+    .stat-card:hover::before {
+        height: 100%;
+        opacity: 0.1;
+    }
+
+    .stat-card:nth-child(2)::before {
+        background: var(--gradient-2);
+    }
+
+    .stat-card:nth-child(3)::before {
+        background: var(--gradient-3);
+    }
+
+    .stat-icon {
+        width: 4rem;
+        height: 4rem;
+        margin: 0 auto 1rem;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        color: white;
+        background: var(--gradient-1);
+    }
+
+    .stat-card:nth-child(2) .stat-icon {
+        background: var(--gradient-2);
+    }
+
+    .stat-card:nth-child(3) .stat-icon {
+        background: var(--gradient-3);
+    }
+
+    .stat-number {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-bottom: 0.5rem;
+    }
+
+    .stat-label {
+        font-size: 0.9rem;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    /* Search and Filter Section */
+    .search-section {
+        background: rgba(30, 41, 59, 0.8);
+        backdrop-filter: blur(20px);
+        border: 1px solid var(--border-color);
+        border-radius: 1rem;
+        padding: 2rem;
+        margin-bottom: 3rem;
+        animation: fadeInUp 0.8s ease-out 0.4s both;
+    }
+
+    .search-grid {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 1.5rem;
+        align-items: end;
+    }
+
+    .search-input-group {
+        position: relative;
+    }
+
+    .search-input {
+        width: 100%;
+        padding: 1rem 1.5rem 1rem 3rem;
+        background: rgba(15, 23, 42, 0.8);
+        border: 2px solid var(--border-color);
+        border-radius: 0.75rem;
+        color: var(--text-primary);
+        font-size: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .search-input:focus {
+        outline: none;
+        border-color: var(--border-accent);
+        box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+    }
+
+    .search-icon {
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-muted);
+    }
+
+    .filter-select {
+        padding: 1rem 1.5rem;
+        background: rgba(15, 23, 42, 0.8);
+        border: 2px solid var(--border-color);
+        border-radius: 0.75rem;
+        color: var(--text-primary);
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        min-width: 200px;
+    }
+
+    .filter-select:focus {
+        outline: none;
+        border-color: var(--border-accent);
+        box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+    }
+
+    /* Users Grid */
+    .users-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        gap: 2rem;
+        animation: fadeInUp 0.8s ease-out 0.6s both;
+    }
+
+    .user-card {
+        background: rgba(30, 41, 59, 0.8);
+        backdrop-filter: blur(20px);
+        border: 1px solid var(--border-color);
+        border-radius: 1rem;
+        padding: 2rem;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .user-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, transparent 50%);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .user-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 20px 40px rgba(16, 185, 129, 0.15);
+        border-color: var(--border-accent);
+    }
+
+    .user-card:hover::before {
+        opacity: 1;
+    }
+
+    .user-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 1.5rem;
+    }
+
+    .user-avatar {
+        width: 4rem;
+        height: 4rem;
+        border-radius: 50%;
+        background: var(--gradient-1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: white;
+        margin-right: 1rem;
+        box-shadow: 0 8px 16px rgba(16, 185, 129, 0.3);
+    }
+
+    .user-info h3 {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 0.25rem;
+    }
+
+    .user-info p {
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+    }
+
+    .user-badges {
+        display: flex;
+        gap: 0.5rem;
+        margin-bottom: 1.5rem;
+        flex-wrap: wrap;
+    }
+
+    .badge {
+        padding: 0.25rem 0.75rem;
+        border-radius: 1rem;
+        font-size: 0.75rem;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .badge-active {
+        background: rgba(16, 185, 129, 0.2);
+        color: #10b981;
+        border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    .badge-inactive {
+        background: rgba(239, 68, 68, 0.2);
+        color: #ef4444;
+        border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
+    .badge-staff {
+        background: rgba(139, 92, 246, 0.2);
+        color: #8b5cf6;
+        border: 1px solid rgba(139, 92, 246, 0.3);
+    }
+
+    .badge-super {
+        background: rgba(245, 158, 11, 0.2);
+        color: #f59e0b;
+        border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+
+    .user-stats {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .user-stat {
+        text-align: center;
+        padding: 1rem;
+        background: rgba(15, 23, 42, 0.5);
+        border-radius: 0.5rem;
+        border: 1px solid var(--border-color);
+    }
+
+    .user-stat-number {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--primary-color);
+        margin-bottom: 0.25rem;
+    }
+
+    .user-stat-label {
+        font-size: 0.8rem;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .user-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        width: 100%;
+    }
+
+    .btn {
+        padding: 0.75rem 1rem;
+        border: none;
+        border-radius: 0.75rem;
+        font-size: 0.85rem;
+        font-weight: 600;
+        text-decoration: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        width: 100%;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .btn::before {
         content: '';
         position: absolute;
         top: 0;
@@ -143,613 +422,506 @@
         background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
         transition: left 0.6s ease;
     }
-    
-    .badge-premium:hover::before {
+
+    .btn:hover::before {
         left: 100%;
     }
-    
-    .user-avatar {
-        background: linear-gradient(135deg, #06b6d4 0%, #2563eb 100%);
-        box-shadow: 0 4px 15px rgba(6, 182, 212, 0.4);
-        border: 2px solid rgba(6, 182, 212, 0.3);
-        transition: all 0.3s ease;
-    }
-    
-    .user-avatar:hover {
-        transform: scale(1.1);
-        box-shadow: 0 8px 25px rgba(6, 182, 212, 0.6);
-    }
-    
-    /* Mejoras para la responsividad de la tabla */
-    .table-responsive {
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-        border-radius: 12px;
-        scrollbar-width: thin;
-        scrollbar-color: rgba(6, 182, 212, 0.5) rgba(255, 255, 255, 0.1);
-    }
-    
-    .table-responsive::-webkit-scrollbar {
-        height: 8px;
-    }
-    
-    .table-responsive::-webkit-scrollbar-track {
-        background: rgba(255, 255, 255, 0.1);
-        border-radius: 10px;
-    }
-    
-    .table-responsive::-webkit-scrollbar-thumb {
-        background: linear-gradient(135deg, #06b6d4 0%, #2563eb 100%);
-        border-radius: 10px;
-    }
-    
-    .table-responsive::-webkit-scrollbar-thumb:hover {
-        background: linear-gradient(135deg, #0891b2 0%, #1d4ed8 100%);
-    }
-    
-    .table-premium {
-        min-width: 900px; /* Ancho mínimo para evitar que se comprima demasiado */
-    }
-    
-    .actions-column {
-        min-width: 140px !important;
-        width: 140px !important;
-        padding: 8px !important;
-    }
-    
-    .dropdown-actions {
-        position: relative;
-    }
-    
-    .dropdown-actions .dropdown-content {
-        right: 0;
-        left: auto;
-        min-width: 190px;
-        z-index: 1000;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-        border: 1px solid rgba(6, 182, 212, 0.3);
-    }
-    
-    .dropdown-actions .dropdown-content li a {
-        padding: 12px 16px;
-        transition: all 0.3s ease;
-        font-size: 14px;
-        border-radius: 8px;
-        margin: 2px;
-    }
-    
-    .dropdown-actions .dropdown-content li a:hover {
-        transform: translateX(4px);
-    }
-    
-    /* Estilos para botones de acción compactos */
-    .btn-action {
-        padding: 0.25rem 0.5rem;
-        font-size: 0.875rem;
-        border-radius: 0.375rem;
-        transition: all 0.2s ease;
-    }
-    
-    .btn-action:hover {
-        transform: translateY(-1px);
-    }
-    
-    /* Mejoras para dispositivos móviles */
-    @media (max-width: 1024px) {
-        .table-premium {
-            min-width: 800px;
-        }
-        
-        .table-premium th,
-        .table-premium td {
-            padding: 12px 8px;
-            font-size: 14px;
-        }
-        
-        .actions-column {
-            min-width: 120px !important;
-            width: 120px !important;
-        }
-        
-        .dropdown-actions .dropdown-content {
-            min-width: 170px;
-        }
-    }
-    
-    @media (max-width: 768px) {
-        .table-premium {
-            min-width: 700px;
-        }
-        
-        .table-premium th,
-        .table-premium td {
-            padding: 10px 6px;
-            font-size: 13px;
-        }
-        
-        .user-avatar {
-            width: 40px !important;
-            height: 40px !important;
-        }
-        
-        .user-avatar span {
-            font-size: 16px !important;
-        }
-        
-        .actions-column {
-            min-width: 100px !important;
-            width: 100px !important;
-        }
-        
-        .dropdown-actions .dropdown-content {
-            min-width: 150px;
-        }
-    }
-    
-    @media (max-width: 480px) {
-        .table-premium {
-            min-width: 600px;
-        }
-        
-        .table-premium th,
-        .table-premium td {
-            padding: 8px 4px;
-            font-size: 12px;
-        }
-        
-        .actions-column {
-            min-width: 90px !important;
-            width: 90px !important;
-        }
-        
-        .dropdown-actions .dropdown-content {
-            min-width: 140px;
-        }
-    }
-    
-    /* Indicador de scroll horizontal */
-    .scroll-indicator {
-        position: relative;
-    }
-    
-    .scroll-indicator::after {
-        content: '← Desliza para ver más →';
-        position: absolute;
-        bottom: -30px;
-        left: 50%;
-        transform: translateX(-50%);
-        font-size: 12px;
-        color: rgba(6, 182, 212, 0.7);
-        font-style: italic;
-        opacity: 0;
-        transition: opacity 0.3s ease;
-    }
-    
-    @media (max-width: 1024px) {
-        .scroll-indicator::after {
-            opacity: 1;
-        }
-    }
-    
-    /* Mejorar el scroll horizontal en mobile */
-    .table-container {
-        overflow-x: auto;
-        scrollbar-width: thin;
-        scrollbar-color: #06b6d4 #1e293b;
-    }
-    
-    .table-container::-webkit-scrollbar {
-        height: 8px;
-    }
-    
-    .table-container::-webkit-scrollbar-track {
-        background: #1e293b;
-        border-radius: 4px;
-    }
-    
-    .table-container::-webkit-scrollbar-thumb {
-        background: linear-gradient(135deg, #06b6d4 0%, #2563eb 100%);
-        border-radius: 4px;
-    }
-    
-    .table-container::-webkit-scrollbar-thumb:hover {
-        background: linear-gradient(135deg, #0891b2 0%, #1d4ed8 100%);
-    }
-    
-    /* Indicador de scroll */
-    .scroll-indicator {
-        position: absolute;
-        top: 50%;
-        right: 10px;
-        transform: translateY(-50%);
-        background: rgba(6, 182, 212, 0.8);
+
+    .btn-primary {
+        background: var(--gradient-1);
         color: white;
-        padding: 0.25rem 0.5rem;
-        border-radius: 0.375rem;
-        font-size: 0.75rem;
-        z-index: 10;
-        animation: fadeInOut 3s ease-in-out;
     }
-    
-    @keyframes fadeInOut {
-        0%, 100% { opacity: 0; }
-        50% { opacity: 1; }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 16px rgba(16, 185, 129, 0.3);
     }
-    
-    /* Responsive breakpoints */
-    @media (max-width: 1024px) {
-        .table-premium {
-            font-size: 0.875rem;
+
+    .btn-secondary {
+        background: rgba(139, 92, 246, 0.2);
+        color: #8b5cf6;
+        border: 1px solid rgba(139, 92, 246, 0.3);
+    }
+
+    .btn-secondary:hover {
+        background: rgba(139, 92, 246, 0.3);
+        transform: translateY(-2px);
+    }
+
+    .btn-danger {
+        background: rgba(239, 68, 68, 0.2);
+        color: #ef4444;
+        border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
+    .btn-danger:hover {
+        background: rgba(239, 68, 68, 0.3);
+        transform: translateY(-2px);
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        background: rgba(30, 41, 59, 0.8);
+        backdrop-filter: blur(20px);
+        border: 1px solid var(--border-color);
+        border-radius: 1rem;
+        animation: fadeInUp 0.8s ease-out 0.6s both;
+    }
+
+    .empty-icon {
+        width: 6rem;
+        height: 6rem;
+        margin: 0 auto 2rem;
+        border-radius: 50%;
+        background: var(--gradient-1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        color: white;
+        opacity: 0.8;
+    }
+
+    .empty-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 1rem;
+    }
+
+    .empty-description {
+        color: var(--text-secondary);
+        font-size: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    /* Animations */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
         }
-        
-        .table-premium th,
-        .table-premium td {
-            padding: 0.5rem 0.25rem;
+        to {
+            opacity: 1;
+            transform: translateY(0);
         }
-        
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .main-container {
+            padding: 1rem;
+        }
+
+        .header-title {
+            font-size: 2rem;
+        }
+
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .search-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .users-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .user-header {
+            flex-direction: column;
+            text-align: center;
+        }
+
         .user-avatar {
-            width: 2.5rem;
-            height: 2.5rem;
+            margin-right: 0;
+            margin-bottom: 1rem;
         }
-        
-        .stat-value {
-            font-size: 1.5rem !important;
+
+        .user-actions {
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .btn {
+            padding: 0.9rem 1rem;
+            font-size: 0.9rem;
+        }
+    }
+
+    @media (min-width: 769px) {
+        .user-actions {
+            flex-direction: row;
+            gap: 0.5rem;
+        }
+
+        .btn {
+            flex: 1;
+            min-width: 0;
         }
     }
 </style>
 
-<div class="particles-background">
-    <div id="particles-container"></div>
-</div>
+<div class="animated-background"></div>
 
-<!-- Título Premium -->
-<div class="text-center mb-8 animate-fade-in">
-    <h1 class="text-4xl font-bold bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent mb-2">
-        Gestión de Usuarios
-    </h1>
-    <p class="text-gray-400">Administra y supervisa todos los usuarios del sistema</p>
-</div>
+<div class="main-container">
+    <!-- Header Section -->
+    <div class="header-section">
+        <h1 class="header-title">Gestión de Usuarios</h1>
+        <p class="header-subtitle">
+            Administra y supervisa todos los usuarios del sistema con una interfaz moderna y intuitiva
+        </p>
+    </div>
 
-<!-- Barra de búsqueda y filtros -->
-<div class="card card-premium animate-slide-up mb-6">
-    <div class="card-body p-6">
-        <form method="get" class="space-y-6">
-            <!-- Búsqueda -->
-            <div class="form-control">
-                <label class="label">
-                    <span class="label-text text-gray-300 font-medium">Buscar usuarios</span>
-                </label>
-                <div class="input-group">
-                    <input type="text" name="search" placeholder="Buscar por nombre de usuario, nombre o email..." 
-                           value="{{ search_query }}" 
-                           class="input input-bordered flex-1 input-premium text-white">
-                    <button type="submit" class="btn btn-premium">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                        </svg>
-                    </button>
-                </div>
+    <!-- Statistics Cards -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-users"></i>
+            </div>
+            <div class="stat-number">{{ usuarios|length }}</div>
+            <div class="stat-label">Total Usuarios</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-user-check"></i>
+            </div>
+            <div class="stat-number">{{ usuarios_activos|length|default:0 }}</div>
+            <div class="stat-label">Usuarios Activos</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-crown"></i>
+            </div>
+            <div class="stat-number">{{ usuarios_staff|length|default:0 }}</div>
+            <div class="stat-label">Personal Staff</div>
+        </div>
+    </div>
+
+    <!-- Search and Filter Section -->
+    <div class="search-section">
+        <form method="get" class="search-grid">
+            <div class="search-input-group">
+                <i class="fas fa-search search-icon"></i>
+                <input 
+                    type="text" 
+                    name="search" 
+                    placeholder="Buscar usuarios por nombre, email o username..." 
+                    value="{{ search_query }}" 
+                    class="search-input"
+                >
             </div>
             
-            <!-- Filtros -->
-            <div class="flex flex-col sm:flex-row gap-4 items-end">
-                <div class="form-control flex-1">
-                    <label class="label">
-                        <span class="label-text text-gray-300 font-medium">Filtrar por tipo</span>
-                    </label>
-                    <select name="filter" class="select select-bordered input-premium text-white" onchange="this.form.submit()">
-                        <option value="all" {% if filter_by == 'all' %}selected{% endif %}>Todos los usuarios</option>
-                        <option value="active" {% if filter_by == 'active' %}selected{% endif %}>Usuarios activos</option>
-                        <option value="inactive" {% if filter_by == 'inactive' %}selected{% endif %}>Usuarios inactivos</option>
-                        <option value="staff" {% if filter_by == 'staff' %}selected{% endif %}>Personal (Staff)</option>
-                        <option value="superuser" {% if filter_by == 'superuser' %}selected{% endif %}>Superusuarios</option>
-                    </select>
-                </div>
-                
-                <div class="stat bg-gradient-to-r from-cyan-500/20 to-blue-500/20 rounded-lg p-4 border border-cyan-500/30">
-                    <div class="stat-title text-gray-300">Total de usuarios</div>
-                    <div class="stat-value text-cyan-400 text-2xl">{{ usuarios|length }}</div>
-                </div>
-            </div>
+            <select name="filter" class="filter-select" onchange="this.form.submit()">
+                <option value="all" {% if filter_by == 'all' %}selected{% endif %}>Todos los usuarios</option>
+                <option value="active" {% if filter_by == 'active' %}selected{% endif %}>Usuarios activos</option>
+                <option value="inactive" {% if filter_by == 'inactive' %}selected{% endif %}>Usuarios inactivos</option>
+                <option value="staff" {% if filter_by == 'staff' %}selected{% endif %}>Personal (Staff)</option>
+                <option value="superuser" {% if filter_by == 'superuser' %}selected{% endif %}>Superusuarios</option>
+            </select>
         </form>
     </div>
-</div>
 
-<!-- Lista de usuarios -->
-{% if usuarios %}
-    <!-- Vista de escritorio -->
-    <div class="hidden lg:block animate-slide-up">
-        <div class="card card-premium">
-            <div class="card-body p-0">
-                <div class="overflow-x-auto">
-                    <table class="table table-premium w-full">
-                        <thead>
-                            <tr class="text-white">
-                                <th class="font-bold text-lg bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">Usuario</th>
-                                <th class="font-bold text-lg bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">Nombre</th>
-                                <th class="font-bold text-lg bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">Email</th>
-                                <th class="font-bold text-lg bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">Perfil</th>
-                                <th class="font-bold text-lg bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">Operaciones</th>
-                                <th class="font-bold text-lg bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">Última Actividad</th>
-                                <th class="font-bold text-lg bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">Estado</th>
-                                <th class="font-bold text-lg bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for item in usuarios %}
-                            <tr class="hover:bg-gradient-to-r hover:from-cyan-500/10 hover:to-blue-500/10 transition-all duration-300">
-                                <td class="py-4">
-                                    <div class="flex items-center gap-3">
-                                        <div class="avatar">
-                                            <div class="user-avatar text-white rounded-full w-12 h-12 flex items-center justify-center">
-                                                <span class="text-lg font-bold">{{ item.usuario.username|first|upper }}</span>
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <div class="font-bold text-white text-lg">{{ item.usuario.username }}</div>
-                                            <div class="flex gap-2 mt-1">
-                                                {% if item.usuario.is_staff %}
-                                                    <div class="badge badge-premium badge-sm">Staff</div>
-                                                {% endif %}
-                                                {% if item.usuario.is_superuser %}
-                                                    <div class="badge badge-error badge-sm">Super</div>
-                                                {% endif %}
-                                            </div>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td class="text-gray-300 text-lg">
-                                    {% if item.usuario.first_name or item.usuario.last_name %}
-                                        {{ item.usuario.first_name }} {{ item.usuario.last_name }}
-                                    {% else %}
-                                        <span class="italic text-gray-500">Sin nombre</span>
-                                    {% endif %}
-                                </td>
-                                <td class="text-gray-300 text-lg">
-                                    {% if item.usuario.email %}
-                                        <div class="truncate max-w-xs">{{ item.usuario.email }}</div>
-                                    {% else %}
-                                        <span class="italic text-gray-500">Sin email</span>
-                                    {% endif %}
-                                </td>
-                                <td>
-                                    {% if item.perfil %}
-                                        <div class="badge badge-premium badge-lg">Completo</div>
-                                        {% if item.perfil.carrera %}
-                                            <div class="text-sm text-gray-400 mt-1">{{ item.perfil.carrera }}</div>
-                                        {% endif %}
-                                    {% else %}
-                                        <div class="badge badge-warning badge-lg">Incompleto</div>
-                                    {% endif %}
-                                </td>
-                                <td>
-                                    <div class="stat">
-                                        <div class="stat-value text-cyan-400 text-3xl">{{ item.operaciones_count }}</div>
-                                        {% if item.operaciones_count > 0 %}
-                                            <div class="stat-desc text-gray-400">operaciones</div>
-                                        {% endif %}
-                                    </div>
-                                </td>
-                                <td class="text-gray-300">
-                                    {% if item.ultima_operacion %}
-                                        <div class="text-lg">{{ item.ultima_operacion.fecha|date:"d/m/Y" }}</div>
-                                        <div class="text-sm text-gray-400">{{ item.ultima_operacion.fecha|date:"H:i" }}</div>
-                                        <div class="badge badge-outline badge-sm mt-1">{{ item.ultima_operacion.metodo }}</div>
-                                    {% else %}
-                                        <span class="italic text-gray-500">Sin actividad</span>
-                                    {% endif %}
-                                </td>
-                                <td>
-                                    {% if item.usuario.is_active %}
-                                        <div class="badge badge-premium badge-lg">Activo</div>
-                                    {% else %}
-                                        <div class="badge badge-error badge-lg">Inactivo</div>
-                                    {% endif %}
-                                </td>
-                                <td>
-                                    <div class="dropdown dropdown-end">
-                                        <label tabindex="0" class="btn btn-circle btn-ghost btn-sm hover:bg-gradient-to-r hover:from-cyan-500/20 hover:to-blue-500/20">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01"/>
-                                            </svg>
-                                        </label>
-                                        <ul tabindex="0" class="dropdown-content menu p-2 shadow glassmorphism rounded-box w-52">
-                                            <li><a href="{% url 'admin_usuario_detalle' item.usuario.id %}" class="text-white hover:bg-gradient-to-r hover:from-cyan-500/20 hover:to-blue-500/20">Ver Detalles</a></li>
-                                            <li><a href="#" onclick="toggleUserActive({{ item.usuario.id }})" class="text-white hover:bg-gradient-to-r hover:from-cyan-500/20 hover:to-blue-500/20">{% if item.usuario.is_active %}Desactivar{% else %}Activar{% endif %}</a></li>
-                                            {% if not item.usuario.is_superuser %}
-                                                <li><a href="#" onclick="deleteUser({{ item.usuario.id }})" class="text-red-400 hover:bg-gradient-to-r hover:from-red-500/20 hover:to-red-600/20">Eliminar</a></li>
-                                            {% endif %}
-                                        </ul>
-                                    </div>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Vista móvil -->
-    <div class="lg:hidden space-y-4">
-        {% for item in usuarios %}
-        <div class="card card-premium animate-fade-in">
-            <div class="card-body p-6">
-                <div class="flex items-center justify-between mb-4">
-                    <div class="flex items-center gap-4">
-                        <div class="avatar">
-                            <div class="user-avatar text-white rounded-full w-16 h-16 flex items-center justify-center">
-                                <span class="text-xl font-bold">{{ item.usuario.username|first|upper }}</span>
-                            </div>
-                        </div>
-                        <div>
-                            <h3 class="font-bold text-white text-xl">{{ item.usuario.username }}</h3>
-                            <div class="flex gap-2 mt-1">
-                                {% if item.usuario.is_staff %}
-                                    <div class="badge badge-premium badge-sm">Staff</div>
-                                {% endif %}
-                                {% if item.usuario.is_superuser %}
-                                    <div class="badge badge-error badge-sm">Super</div>
-                                {% endif %}
-                            </div>
-                        </div>
+    <!-- Users Grid -->
+    {% if usuarios %}
+        <div class="users-grid">
+            {% for item in usuarios %}
+            <div class="user-card">
+                <div class="user-header">
+                    <div class="user-avatar">
+                        {{ item.usuario.username|first|upper }}
                     </div>
-                    
+                    <div class="user-info">
+                        <h3>{{ item.usuario.username }}</h3>
+                        <p>
+                            {% if item.usuario.first_name or item.usuario.last_name %}
+                                {{ item.usuario.first_name }} {{ item.usuario.last_name }}
+                            {% else %}
+                                {{ item.usuario.email|default:"Sin email" }}
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+
+                <div class="user-badges">
                     {% if item.usuario.is_active %}
-                        <div class="badge badge-premium badge-lg">Activo</div>
+                        <span class="badge badge-active">Activo</span>
                     {% else %}
-                        <div class="badge badge-error badge-lg">Inactivo</div>
+                        <span class="badge badge-inactive">Inactivo</span>
+                    {% endif %}
+                    
+                    {% if item.usuario.is_staff %}
+                        <span class="badge badge-staff">Staff</span>
+                    {% endif %}
+                    
+                    {% if item.usuario.is_superuser %}
+                        <span class="badge badge-super">Super</span>
                     {% endif %}
                 </div>
-                
-                <div class="grid grid-cols-2 gap-4 mb-4">
-                    <div class="stat bg-gradient-to-r from-cyan-500/20 to-blue-500/20 rounded-lg p-3">
-                        <div class="stat-title text-gray-300">Operaciones</div>
-                        <div class="stat-value text-cyan-400 text-2xl">{{ item.operaciones_count }}</div>
+
+                <div class="user-stats">
+                    <div class="user-stat">
+                        <div class="user-stat-number">{{ item.operaciones_count }}</div>
+                        <div class="user-stat-label">Operaciones</div>
                     </div>
-                    <div class="stat bg-gradient-to-r from-purple-500/20 to-pink-500/20 rounded-lg p-3">
-                        <div class="stat-title text-gray-300">Perfil</div>
-                        <div class="stat-value text-lg">
-                            {% if item.perfil %}
-                                <div class="badge badge-premium badge-sm">Completo</div>
+                    <div class="user-stat">
+                        <div class="user-stat-number">
+                            {% if item.ultima_operacion %}
+                                {{ item.ultima_operacion.fecha|timesince }}
                             {% else %}
-                                <div class="badge badge-warning badge-sm">Incompleto</div>
+                                N/A
                             {% endif %}
                         </div>
+                        <div class="user-stat-label">Última Actividad</div>
                     </div>
                 </div>
-                
-                {% if item.ultima_operacion %}
-                <div class="bg-gradient-to-r from-gray-700/30 to-gray-600/30 rounded-lg p-3 mb-4">
-                    <div class="text-sm text-gray-400">Última actividad</div>
-                    <div class="text-white">{{ item.ultima_operacion.fecha|date:"d/m/Y H:i" }}</div>
-                    <div class="badge badge-outline badge-sm mt-1">{{ item.ultima_operacion.metodo }}</div>
-                </div>
-                {% endif %}
-                
-                <div class="flex gap-2">
-                    <a href="{% url 'admin_usuario_detalle' item.usuario.id %}" class="btn btn-premium btn-sm flex-1">
+
+                <div class="user-actions">
+                    <a href="{% url 'admin_usuario_detalle' item.usuario.id %}" class="btn btn-primary">
+                        <i class="fas fa-eye"></i>
                         Ver Detalles
                     </a>
-                    <button class="btn btn-warning btn-sm" onclick="toggleUserActive({{ item.usuario.id }})">
+                    
+                    <button class="btn btn-secondary" onclick="toggleUserActive({{ item.usuario.id }})">
+                        <i class="fas fa-toggle-{% if item.usuario.is_active %}on{% else %}off{% endif %}"></i>
                         {% if item.usuario.is_active %}Desactivar{% else %}Activar{% endif %}
                     </button>
+                    
                     {% if not item.usuario.is_superuser %}
-                    <button class="btn btn-error btn-sm" onclick="deleteUser({{ item.usuario.id }})">
-                        Eliminar
-                    </button>
+                        <button class="btn btn-danger" onclick="deleteUser({{ item.usuario.id }})">
+                            <i class="fas fa-trash"></i>
+                            Eliminar
+                        </button>
                     {% endif %}
                 </div>
             </div>
+            {% endfor %}
         </div>
-        {% endfor %}
-    </div>
-{% else %}
-    <div class="card card-premium animate-fade-in">
-        <div class="card-body text-center p-12">
-            <div class="mb-8">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-24 w-24 mx-auto text-cyan-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"/>
-                </svg>
+    {% else %}
+        <div class="empty-state">
+            <div class="empty-icon">
+                <i class="fas fa-users"></i>
             </div>
-            <h3 class="text-2xl font-bold bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent mb-4">
-                No se encontraron usuarios
-            </h3>
-            <p class="text-gray-400 text-lg mb-6">
-                No hay usuarios que coincidan con los criterios especificados.
+            <h3 class="empty-title">No se encontraron usuarios</h3>
+            <p class="empty-description">
+                No hay usuarios que coincidan con los criterios de búsqueda especificados.
             </p>
-            <div class="flex justify-center gap-4">
-                <a href="{% url 'admin_usuarios' %}" class="btn btn-premium">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
-                    </svg>
-                    Mostrar todos
-                </a>
-            </div>
+            <a href="{% url 'admin_usuarios' %}" class="btn btn-primary">
+                <i class="fas fa-refresh"></i>
+                Mostrar todos los usuarios
+            </a>
         </div>
-    </div>
-{% endif %}
+    {% endif %}
+</div>
 
 <script>
-// Crear partículas animadas
-function createParticles() {
-    const container = document.getElementById('particles-container');
-    const particleCount = 50;
-    
-    for (let i = 0; i < particleCount; i++) {
-        const particle = document.createElement('div');
-        particle.className = 'particle';
-        particle.style.left = Math.random() * 100 + '%';
-        particle.style.top = Math.random() * 100 + '%';
-        particle.style.animationDelay = Math.random() * 6 + 's';
-        particle.style.animationDuration = (Math.random() * 4 + 4) + 's';
-        container.appendChild(particle);
+    // Funciones de administración de usuarios
+    function toggleUserActive(userId) {
+        // Mostrar indicador de carga
+        const button = event.target.closest('button');
+        const originalText = button.innerHTML;
+        button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando...';
+        button.disabled = true;
+        
+        if (confirm('¿Está seguro de que desea cambiar el estado de este usuario?')) {
+            fetch(`{% url 'admin_toggle_user_active' 0 %}`.replace('0', userId), {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                    'Content-Type': 'application/json',
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Mostrar mensaje de éxito
+                    showNotification('Estado del usuario actualizado correctamente', 'success');
+                    setTimeout(() => {
+                        location.reload();
+                    }, 1000);
+                } else {
+                    throw new Error('Error en la respuesta del servidor');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showNotification('Error al cambiar el estado del usuario', 'error');
+                button.innerHTML = originalText;
+                button.disabled = false;
+            });
+        } else {
+            button.innerHTML = originalText;
+            button.disabled = false;
+        }
     }
-}
 
-// Animaciones de entrada
-function animateElements() {
-    const cards = document.querySelectorAll('.card-premium');
-    cards.forEach((card, index) => {
-        card.style.animationDelay = (index * 0.1) + 's';
+    function deleteUser(userId) {
+        // Mostrar indicador de carga
+        const button = event.target.closest('button');
+        const originalText = button.innerHTML;
+        button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando...';
+        button.disabled = true;
+        
+        if (confirm('¿Está seguro de que desea eliminar este usuario? Esta acción no se puede deshacer.')) {
+            fetch(`{% url 'admin_delete_user' 0 %}`.replace('0', userId), {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                    'Content-Type': 'application/json',
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Mostrar mensaje de éxito
+                    showNotification('Usuario eliminado correctamente', 'success');
+                    setTimeout(() => {
+                        location.reload();
+                    }, 1000);
+                } else {
+                    throw new Error('Error en la respuesta del servidor');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showNotification('Error al eliminar el usuario', 'error');
+                button.innerHTML = originalText;
+                button.disabled = false;
+            });
+        } else {
+            button.innerHTML = originalText;
+            button.disabled = false;
+        }
+    }
+
+    // Función para mostrar notificaciones
+    function showNotification(message, type) {
+        const notification = document.createElement('div');
+        notification.className = `notification notification-${type}`;
+        notification.innerHTML = `
+            <div class="notification-content">
+                <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-triangle'}"></i>
+                <span>${message}</span>
+            </div>
+        `;
+        
+        // Agregar estilos para la notificación
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: ${type === 'success' ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)' : 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)'};
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+            animation: slideInRight 0.3s ease-out;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        `;
+        
+        document.body.appendChild(notification);
+        
+        // Remover la notificación después de 3 segundos
+        setTimeout(() => {
+            notification.style.animation = 'slideOutRight 0.3s ease-in';
+            setTimeout(() => {
+                document.body.removeChild(notification);
+            }, 300);
+        }, 3000);
+    }
+
+    // Efectos visuales mejorados
+    document.addEventListener('DOMContentLoaded', function() {
+        // Agregar estilos para las animaciones de notificación
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideInRight {
+                from {
+                    transform: translateX(100%);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+            }
+            
+            @keyframes slideOutRight {
+                from {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+                to {
+                    transform: translateX(100%);
+                    opacity: 0;
+                }
+            }
+            
+            .notification-content {
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+            }
+            
+            .btn:disabled {
+                opacity: 0.6;
+                cursor: not-allowed;
+                transform: none !important;
+            }
+        `;
+        document.head.appendChild(style);
+        
+        // Animación de entrada escalonada para las tarjetas
+        const cards = document.querySelectorAll('.user-card');
+        cards.forEach((card, index) => {
+            card.style.animationDelay = `${0.6 + (index * 0.1)}s`;
+        });
+
+        // Efecto de parallax suave para el fondo
+        document.addEventListener('mousemove', function(e) {
+            const xAxis = (window.innerWidth / 2 - e.pageX) / 50;
+            const yAxis = (window.innerHeight / 2 - e.pageY) / 50;
+            
+            document.documentElement.style.setProperty('--mouse-x', xAxis + 'px');
+            document.documentElement.style.setProperty('--mouse-y', yAxis + 'px');
+        });
+
+        // Auto-submit del formulario de búsqueda con debounce
+        let searchTimeout;
+        const searchInput = document.querySelector('.search-input');
+        
+        if (searchInput) {
+            searchInput.addEventListener('input', function() {
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(() => {
+                    this.form.submit();
+                }, 500);
+            });
+        }
+
+        // Mejorar la experiencia de hover en los botones
+        const buttons = document.querySelectorAll('.btn');
+        buttons.forEach(button => {
+            button.addEventListener('mouseenter', function() {
+                if (!this.disabled) {
+                    this.style.transform = 'translateY(-2px)';
+                }
+            });
+            
+            button.addEventListener('mouseleave', function() {
+                if (!this.disabled) {
+                    this.style.transform = 'translateY(0)';
+                }
+            });
+        });
     });
-}
-
-// Funciones de administración de usuarios
-function toggleUserActive(userId) {
-    if (confirm('¿Está seguro de que desea cambiar el estado de este usuario?')) {
-        fetch(`{% url 'admin_toggle_user_active' 0 %}`.replace('0', userId), {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
-                'Content-Type': 'application/json',
-            },
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                location.reload();
-            } else {
-                alert('Error al cambiar el estado del usuario');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Error al cambiar el estado del usuario');
-        });
-    }
-}
-
-function deleteUser(userId) {
-    if (confirm('¿Está seguro de que desea eliminar este usuario? Esta acción no se puede deshacer.')) {
-        fetch(`{% url 'admin_delete_user' 0 %}`.replace('0', userId), {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
-                'Content-Type': 'application/json',
-            },
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                location.reload();
-            } else {
-                alert('Error al eliminar el usuario');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Error al eliminar el usuario');
-        });
-    }
-}
-
-// Inicializar cuando la página carga
-document.addEventListener('DOMContentLoaded', function() {
-    createParticles();
-    animateElements();
-});
 </script>
 
 {% csrf_token %}
