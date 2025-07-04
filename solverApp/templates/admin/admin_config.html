@@ -8,9 +8,25 @@
 <style>
     .tab-content {
         display: none;
+        opacity: 0;
+        transition: opacity 0.3s ease-in-out;
     }
     .tab-content.active {
         display: block;
+        opacity: 1;
+    }
+    .tab-button {
+        transition: all 0.3s ease-in-out;
+    }
+    .tab-button:hover {
+        transform: translateY(-2px);
+    }
+    .tab-button.active {
+        transform: translateY(0);
+    }
+    /* Debugging styles */
+    .debug-tabs {
+        border: 2px solid red !important;
     }
 </style>
 {% endblock %}
@@ -30,6 +46,52 @@
     </div>
 </div>
 
+<!-- Estadísticas Rápidas -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 animate-slide-in">
+    <div class="content-premium p-4 border-l-4 border-cyan-400">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-xs font-medium text-gray-400">Usuarios Activos</p>
+                <p class="text-2xl font-bold text-cyan-400">{{ usuarios_activos }}</p>
+            </div>
+            <div class="bg-cyan-400/20 p-2 rounded-full">
+                <i class="fas fa-users text-cyan-400 text-lg"></i>
+            </div>
+        </div>
+    </div>
+    
+    <div class="content-premium p-4 border-l-4 border-purple-400">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-xs font-medium text-gray-400">Total Operaciones</p>
+                <p class="text-2xl font-bold text-purple-400">{{ total_operaciones }}</p>
+            </div>
+            <div class="bg-purple-400/20 p-2 rounded-full">
+                <i class="fas fa-calculator text-purple-400 text-lg"></i>
+            </div>
+        </div>
+    </div>
+    
+    <div class="content-premium p-4 border-l-4 border-yellow-400">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-xs font-medium text-gray-400">Estado Sistema</p>
+                <p class="text-base font-bold {% if config.mantenimiento_activo %}text-red-400{% else %}text-green-400{% endif %}">
+                    {% if config.mantenimiento_activo %}
+                        <i class="fas fa-exclamation-triangle mr-1"></i>
+                        Mantenimiento
+                    {% else %}
+                        <i class="fas fa-check-circle mr-1"></i>
+                        Operativo
+                    {% endif %}
+                </p>
+            </div>
+            <div class="bg-yellow-400/20 p-2 rounded-full">
+                <i class="fas fa-server text-yellow-400 text-lg"></i>
+            </div>
+        </div>
+    </div>
+</div>
 
 <!-- Tabs de Configuración -->
 <div class="content-premium animate-fade-in">
@@ -121,55 +183,86 @@
                     <i class="fas fa-calculator mr-2"></i>Gestión de Métodos
                 </h3>
                 
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <div class="content-premium p-6 border border-cyan-400/30">
-                        <div class="flex items-center justify-between mb-4">
-                            <h4 class="text-lg font-medium text-cyan-400">Newton-Raphson</h4>
-                            <label class="relative inline-flex items-center cursor-pointer">
-                                <input type="checkbox" class="sr-only peer" checked>
-                                <div class="w-11 h-6 bg-gray-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-cyan-400/25 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-cyan-400"></div>
-                            </label>
-                        </div>
-                        
-                        <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-300 mb-1">Iteraciones Máx.</label>
-                                <input type="number" value="100" class="w-full px-3 py-2 bg-gray-700/50 border border-cyan-400/30 rounded-md text-white focus:ring-2 focus:ring-cyan-400 text-sm">
+                <form method="post" class="space-y-6">
+                    {% csrf_token %}
+                    <input type="hidden" name="seccion" value="metodos">
+                    
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        {% for metodo in metodos_config %}
+                        <div class="content-premium p-6 border border-cyan-400/30 {% if not metodo.habilitado %}opacity-75{% endif %}">
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="flex items-center">
+                                    <h4 class="text-lg font-medium text-cyan-400">{{ metodo.get_metodo_display }}</h4>
+                                    {% if metodo.habilitado %}
+                                        <span class="ml-2 px-2 py-1 bg-green-400/20 text-green-400 text-xs rounded-full">
+                                            <i class="fas fa-check mr-1"></i>Activo
+                                        </span>
+                                    {% else %}
+                                        <span class="ml-2 px-2 py-1 bg-red-400/20 text-red-400 text-xs rounded-full">
+                                            <i class="fas fa-times mr-1"></i>Inactivo
+                                        </span>
+                                    {% endif %}
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" name="metodo_{{ metodo.metodo }}_habilitado" class="sr-only peer" {% if metodo.habilitado %}checked{% endif %}>
+                                    <div class="w-11 h-6 bg-gray-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-cyan-400/25 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-cyan-400"></div>
+                                </label>
                             </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-300 mb-1">Precisión</label>
-                                <input type="number" value="0.0001" step="0.00001" class="w-full px-3 py-2 bg-gray-700/50 border border-cyan-400/30 rounded-md text-white focus:ring-2 focus:ring-cyan-400 text-sm">
+                            
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-300 mb-1">Iteraciones Máx.</label>
+                                    <input type="number" name="metodo_{{ metodo.metodo }}_iteraciones" value="{{ metodo.limite_iteraciones }}" class="w-full px-3 py-2 bg-gray-700/50 border border-cyan-400/30 rounded-md text-white focus:ring-2 focus:ring-cyan-400 text-sm">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-300 mb-1">Precisión</label>
+                                    <input type="number" name="metodo_{{ metodo.metodo }}_precision" value="{{ metodo.precision }}" step="0.00001" class="w-full px-3 py-2 bg-gray-700/50 border border-cyan-400/30 rounded-md text-white focus:ring-2 focus:ring-cyan-400 text-sm">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-300 mb-1">Tiempo Máx. (seg)</label>
+                                    <input type="number" name="metodo_{{ metodo.metodo }}_tiempo" value="{{ metodo.tiempo_maximo }}" class="w-full px-3 py-2 bg-gray-700/50 border border-cyan-400/30 rounded-md text-white focus:ring-2 focus:ring-cyan-400 text-sm">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-300 mb-1">Uso Diario</label>
+                                    <input type="number" name="metodo_{{ metodo.metodo }}_uso_diario" value="{{ metodo.limite_uso_diario }}" class="w-full px-3 py-2 bg-gray-700/50 border border-cyan-400/30 rounded-md text-white focus:ring-2 focus:ring-cyan-400 text-sm">
+                                </div>
+                            </div>
+                            
+                            <div class="mt-4 p-3 bg-gray-700/30 rounded-lg">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-xs text-gray-400">
+                                            <strong>Estado:</strong> 
+                                            <span class="{% if metodo.habilitado %}text-green-400{% else %}text-red-400{% endif %}">
+                                                {% if metodo.habilitado %}
+                                                    <i class="fas fa-check-circle mr-1"></i>Habilitado
+                                                {% else %}
+                                                    <i class="fas fa-times-circle mr-1"></i>Deshabilitado
+                                                {% endif %}
+                                            </span>
+                                        </p>
+                                        {% if metodo.descripcion %}
+                                        <p class="text-xs text-gray-400 mt-1">{{ metodo.descripcion }}</p>
+                                        {% endif %}
+                                    </div>
+                                    <div class="text-right">
+                                        <p class="text-xs text-gray-400">
+                                            <strong>Última actualización:</strong><br>
+                                            <span class="text-cyan-400">{{ metodo.fecha_actualizacion|date:"d/m/Y H:i" }}</span>
+                                        </p>
+                                    </div>
+                                </div>
                             </div>
                         </div>
+                        {% endfor %}
                     </div>
                     
-                    <div class="content-premium p-6 border border-cyan-400/30">
-                        <div class="flex items-center justify-between mb-4">
-                            <h4 class="text-lg font-medium text-cyan-400">Integración Numérica</h4>
-                            <label class="relative inline-flex items-center cursor-pointer">
-                                <input type="checkbox" class="sr-only peer" checked>
-                                <div class="w-11 h-6 bg-gray-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-cyan-400/25 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-cyan-400"></div>
-                            </label>
-                        </div>
-                        
-                        <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-300 mb-1">Subdivisiones</label>
-                                <input type="number" value="1000" class="w-full px-3 py-2 bg-gray-700/50 border border-cyan-400/30 rounded-md text-white focus:ring-2 focus:ring-cyan-400 text-sm">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-300 mb-1">Precisión</label>
-                                <input type="number" value="0.0001" step="0.00001" class="w-full px-3 py-2 bg-gray-700/50 border border-cyan-400/30 rounded-md text-white focus:ring-2 focus:ring-cyan-400 text-sm">
-                            </div>
-                        </div>
+                    <div class="flex justify-end mt-6">
+                        <button type="submit" class="nav-btn bg-cyan-400 hover:bg-cyan-500 text-gray-900 px-6 py-2 rounded-lg font-semibold transition-colors">
+                            <i class="fas fa-save mr-2"></i>Guardar Configuración
+                        </button>
                     </div>
-                </div>
-                
-                <div class="flex justify-end mt-6">
-                    <button type="submit" class="nav-btn bg-cyan-400 hover:bg-cyan-500 text-gray-900 px-6 py-2 rounded-lg font-semibold transition-colors">
-                        <i class="fas fa-save mr-2"></i>Guardar Configuración
-                    </button>
-                </div>
+                </form>
             </div>
         </div>
 
@@ -180,46 +273,51 @@
                     <i class="fas fa-gauge mr-2"></i>Límites de Uso
                 </h3>
                 
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div class="content-premium p-6 border-l-4 border-blue-400">
-                        <div class="flex items-center mb-4">
-                            <div class="bg-blue-400 p-2 rounded-full mr-3">
-                                <i class="fas fa-user text-white"></i>
+                <form method="post" class="space-y-6">
+                    {% csrf_token %}
+                    <input type="hidden" name="seccion" value="limites">
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="content-premium p-6 border-l-4 border-blue-400">
+                            <div class="flex items-center mb-4">
+                                <div class="bg-blue-400 p-2 rounded-full mr-3">
+                                    <i class="fas fa-user text-white"></i>
+                                </div>
+                                <h4 class="text-lg font-medium text-cyan-400">Por Usuario</h4>
                             </div>
-                            <h4 class="text-lg font-medium text-cyan-400">Por Usuario</h4>
+                            <label class="block text-sm font-medium text-gray-300 mb-2">Operaciones por Usuario</label>
+                            <input type="number" name="limite_operaciones_usuario" value="{{ config.limite_operaciones_usuario }}" class="w-full px-4 py-2 bg-gray-700/50 border border-cyan-400/30 rounded-lg text-white focus:ring-2 focus:ring-cyan-400">
                         </div>
-                        <label class="block text-sm font-medium text-gray-300 mb-2">Operaciones por Usuario</label>
-                        <input type="number" value="50" class="w-full px-4 py-2 bg-gray-700/50 border border-cyan-400/30 rounded-lg text-white focus:ring-2 focus:ring-cyan-400">
+                        
+                        <div class="content-premium p-6 border-l-4 border-green-400">
+                            <div class="flex items-center mb-4">
+                                <div class="bg-green-400 p-2 rounded-full mr-3">
+                                    <i class="fas fa-calendar-day text-white"></i>
+                                </div>
+                                <h4 class="text-lg font-medium text-cyan-400">Por Día</h4>
+                            </div>
+                            <label class="block text-sm font-medium text-gray-300 mb-2">Operaciones por Día</label>
+                            <input type="number" name="limite_operaciones_dia" value="{{ config.limite_operaciones_dia }}" class="w-full px-4 py-2 bg-gray-700/50 border border-cyan-400/30 rounded-lg text-white focus:ring-2 focus:ring-cyan-400">
+                        </div>
+                        
+                        <div class="content-premium p-6 border-l-4 border-orange-400">
+                            <div class="flex items-center mb-4">
+                                <div class="bg-orange-400 p-2 rounded-full mr-3">
+                                    <i class="fas fa-clock text-white"></i>
+                                </div>
+                                <h4 class="text-lg font-medium text-cyan-400">Sesión</h4>
+                            </div>
+                            <label class="block text-sm font-medium text-gray-300 mb-2">Tiempo de Sesión (segundos)</label>
+                            <input type="number" name="limite_tiempo_sesion" value="{{ config.limite_tiempo_sesion }}" class="w-full px-4 py-2 bg-gray-700/50 border border-cyan-400/30 rounded-lg text-white focus:ring-2 focus:ring-cyan-400">
+                        </div>
                     </div>
                     
-                    <div class="content-premium p-6 border-l-4 border-green-400">
-                        <div class="flex items-center mb-4">
-                            <div class="bg-green-400 p-2 rounded-full mr-3">
-                                <i class="fas fa-calendar-day text-white"></i>
-                            </div>
-                            <h4 class="text-lg font-medium text-cyan-400">Por Día</h4>
-                        </div>
-                        <label class="block text-sm font-medium text-gray-300 mb-2">Operaciones por Día</label>
-                        <input type="number" value="1000" class="w-full px-4 py-2 bg-gray-700/50 border border-cyan-400/30 rounded-lg text-white focus:ring-2 focus:ring-cyan-400">
+                    <div class="flex justify-end mt-6">
+                        <button type="submit" class="nav-btn bg-cyan-400 hover:bg-cyan-500 text-gray-900 px-6 py-2 rounded-lg font-semibold transition-colors">
+                            <i class="fas fa-save mr-2"></i>Actualizar Límites
+                        </button>
                     </div>
-                    
-                    <div class="content-premium p-6 border-l-4 border-orange-400">
-                        <div class="flex items-center mb-4">
-                            <div class="bg-orange-400 p-2 rounded-full mr-3">
-                                <i class="fas fa-clock text-white"></i>
-                            </div>
-                            <h4 class="text-lg font-medium text-cyan-400">Sesión</h4>
-                        </div>
-                        <label class="block text-sm font-medium text-gray-300 mb-2">Tiempo de Sesión (segundos)</label>
-                        <input type="number" value="3600" class="w-full px-4 py-2 bg-gray-700/50 border border-cyan-400/30 rounded-lg text-white focus:ring-2 focus:ring-cyan-400">
-                    </div>
-                </div>
-                
-                <div class="flex justify-end mt-6">
-                    <button type="submit" class="nav-btn bg-cyan-400 hover:bg-cyan-500 text-gray-900 px-6 py-2 rounded-lg font-semibold transition-colors">
-                        <i class="fas fa-save mr-2"></i>Actualizar Límites
-                    </button>
-                </div>
+                </form>
             </div>
         </div>
 
@@ -230,33 +328,73 @@
                     <i class="fas fa-envelope mr-2"></i>Configuración de Email
                 </h3>
                 
-                <div class="flex items-center justify-between p-4 bg-gray-700/30 rounded-lg mb-6">
-                    <div>
-                        <h4 class="text-lg font-medium text-cyan-400">Habilitar Email</h4>
-                        <p class="text-sm text-gray-400">Activa el sistema de notificaciones por email</p>
+                <form method="post" class="space-y-6">
+                    {% csrf_token %}
+                    <input type="hidden" name="seccion" value="email">
+                    
+                    <div class="flex items-center justify-between p-4 bg-gray-700/30 rounded-lg mb-6">
+                        <div>
+                            <h4 class="text-lg font-medium text-cyan-400">Habilitar Email</h4>
+                            <p class="text-sm text-gray-400">Activa el sistema de notificaciones por email</p>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" name="email_habilitado" class="sr-only peer" {% if config.email_habilitado %}checked{% endif %}>
+                            <div class="w-11 h-6 bg-gray-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-cyan-400/25 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-cyan-400"></div>
+                        </label>
                     </div>
-                    <label class="relative inline-flex items-center cursor-pointer">
-                        <input type="checkbox" class="sr-only peer">
-                        <div class="w-11 h-6 bg-gray-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-cyan-400/25 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-cyan-400"></div>
-                    </label>
-                </div>
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-300 mb-2">Host SMTP</label>
-                        <input type="text" placeholder="smtp.gmail.com" class="w-full px-4 py-2 bg-gray-700/50 border border-cyan-400/30 rounded-lg text-white focus:ring-2 focus:ring-cyan-400">
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-2">Host SMTP</label>
+                            <input type="text" name="smtp_host" value="{{ config.smtp_host }}" placeholder="smtp.gmail.com" class="w-full px-4 py-2 bg-gray-700/50 border border-cyan-400/30 rounded-lg text-white focus:ring-2 focus:ring-cyan-400">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-2">Puerto SMTP</label>
+                            <input type="number" name="smtp_port" value="{{ config.smtp_port }}" class="w-full px-4 py-2 bg-gray-700/50 border border-cyan-400/30 rounded-lg text-white focus:ring-2 focus:ring-cyan-400">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-2">Usuario SMTP</label>
+                            <input type="email" name="smtp_usuario" value="{{ config.smtp_usuario }}" placeholder="tu-email@gmail.com" class="w-full px-4 py-2 bg-gray-700/50 border border-cyan-400/30 rounded-lg text-white focus:ring-2 focus:ring-cyan-400">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-2">Contraseña SMTP</label>
+                            <input type="password" name="smtp_password" value="{{ config.smtp_password }}" placeholder="contraseña o app password" class="w-full px-4 py-2 bg-gray-700/50 border border-cyan-400/30 rounded-lg text-white focus:ring-2 focus:ring-cyan-400">
+                        </div>
                     </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-300 mb-2">Puerto SMTP</label>
-                        <input type="number" value="587" class="w-full px-4 py-2 bg-gray-700/50 border border-cyan-400/30 rounded-lg text-white focus:ring-2 focus:ring-cyan-400">
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="flex items-center justify-between p-4 bg-gray-700/30 rounded-lg">
+                            <div>
+                                <h4 class="text-base font-medium text-cyan-400">Usar TLS</h4>
+                                <p class="text-sm text-gray-400">Habilitar conexión segura TLS</p>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" name="smtp_tls" class="sr-only peer" {% if config.smtp_tls %}checked{% endif %}>
+                                <div class="w-11 h-6 bg-gray-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-cyan-400/25 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-cyan-400"></div>
+                            </label>
+                        </div>
+                        
+                        <div class="flex items-center justify-between p-4 bg-gray-700/30 rounded-lg">
+                            <div>
+                                <h4 class="text-base font-medium text-cyan-400">Notificaciones</h4>
+                                <p class="text-sm text-gray-400">Enviar notificaciones por email</p>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" name="notificaciones_usuario" class="sr-only peer" {% if config.notificaciones_usuario %}checked{% endif %}>
+                                <div class="w-11 h-6 bg-gray-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-cyan-400/25 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-cyan-400"></div>
+                            </label>
+                        </div>
                     </div>
-                </div>
-                
-                <div class="flex justify-end mt-6">
-                    <button type="submit" class="nav-btn bg-cyan-400 hover:bg-cyan-500 text-gray-900 px-6 py-2 rounded-lg font-semibold transition-colors">
-                        <i class="fas fa-save mr-2"></i>Guardar Configuración
-                    </button>
-                </div>
+                    
+                    <div class="flex justify-end gap-4 mt-6">
+                        <button type="submit" name="seccion" value="test_email" class="nav-btn bg-yellow-400 hover:bg-yellow-500 text-gray-900 px-6 py-2 rounded-lg font-semibold transition-colors">
+                            <i class="fas fa-paper-plane mr-2"></i>Probar Email
+                        </button>
+                        <button type="submit" class="nav-btn bg-cyan-400 hover:bg-cyan-500 text-gray-900 px-6 py-2 rounded-lg font-semibold transition-colors">
+                            <i class="fas fa-save mr-2"></i>Guardar Configuración
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
 
@@ -267,46 +405,51 @@
                     <i class="fas fa-shield-alt mr-2"></i>Configuración de Seguridad
                 </h3>
                 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="content-premium p-6 border-l-4 border-red-400">
-                        <div class="flex items-center mb-4">
-                            <div class="bg-red-400 p-2 rounded-full mr-3">
-                                <i class="fas fa-shield-alt text-white"></i>
+                <form method="post" class="space-y-6">
+                    {% csrf_token %}
+                    <input type="hidden" name="seccion" value="seguridad">
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="content-premium p-6 border-l-4 border-red-400">
+                            <div class="flex items-center mb-4">
+                                <div class="bg-red-400 p-2 rounded-full mr-3">
+                                    <i class="fas fa-shield-alt text-white"></i>
+                                </div>
+                                <h4 class="text-lg font-medium text-cyan-400">Control de Acceso</h4>
                             </div>
-                            <h4 class="text-lg font-medium text-cyan-400">Control de Acceso</h4>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-300 mb-2">Intentos de Login Máximos</label>
+                                    <input type="number" name="intentos_login_max" value="{{ config.intentos_login_max }}" class="w-full px-4 py-2 bg-gray-700/50 border border-cyan-400/30 rounded-lg text-white focus:ring-2 focus:ring-cyan-400">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-300 mb-2">Tiempo de Bloqueo (segundos)</label>
+                                    <input type="number" name="tiempo_bloqueo_login" value="{{ config.tiempo_bloqueo_login }}" class="w-full px-4 py-2 bg-gray-700/50 border border-cyan-400/30 rounded-lg text-white focus:ring-2 focus:ring-cyan-400">
+                                </div>
+                            </div>
                         </div>
-                        <div class="space-y-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-300 mb-2">Intentos de Login Máximos</label>
-                                <input type="number" value="5" class="w-full px-4 py-2 bg-gray-700/50 border border-cyan-400/30 rounded-lg text-white focus:ring-2 focus:ring-cyan-400">
+                        
+                        <div class="content-premium p-6 border-l-4 border-blue-400">
+                            <div class="flex items-center mb-4">
+                                <div class="bg-blue-400 p-2 rounded-full mr-3">
+                                    <i class="fas fa-info-circle text-white"></i>
+                                </div>
+                                <h4 class="text-lg font-medium text-cyan-400">Información</h4>
                             </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-300 mb-2">Tiempo de Bloqueo (segundos)</label>
-                                <input type="number" value="300" class="w-full px-4 py-2 bg-gray-700/50 border border-cyan-400/30 rounded-lg text-white focus:ring-2 focus:ring-cyan-400">
+                            <div class="space-y-3 text-sm text-gray-400">
+                                <p><strong class="text-cyan-400">Intentos Máximos:</strong> Número de intentos de login antes del bloqueo</p>
+                                <p><strong class="text-cyan-400">Tiempo de Bloqueo:</strong> Tiempo en segundos que el usuario permanece bloqueado</p>
+                                <p><strong class="text-cyan-400">Recomendación:</strong> Usar 5 intentos y 300 segundos (5 minutos) de bloqueo</p>
                             </div>
                         </div>
                     </div>
                     
-                    <div class="content-premium p-6 border-l-4 border-blue-400">
-                        <div class="flex items-center mb-4">
-                            <div class="bg-blue-400 p-2 rounded-full mr-3">
-                                <i class="fas fa-info-circle text-white"></i>
-                            </div>
-                            <h4 class="text-lg font-medium text-cyan-400">Información</h4>
-                        </div>
-                        <div class="space-y-3 text-sm text-gray-400">
-                            <p><strong class="text-cyan-400">Intentos Máximos:</strong> Número de intentos de login antes del bloqueo</p>
-                            <p><strong class="text-cyan-400">Tiempo de Bloqueo:</strong> Tiempo en segundos que el usuario permanece bloqueado</p>
-                            <p><strong class="text-cyan-400">Recomendación:</strong> Usar 5 intentos y 300 segundos (5 minutos) de bloqueo</p>
-                        </div>
+                    <div class="flex justify-end mt-6">
+                        <button type="submit" class="nav-btn bg-cyan-400 hover:bg-cyan-500 text-gray-900 px-6 py-2 rounded-lg font-semibold transition-colors">
+                            <i class="fas fa-save mr-2"></i>Actualizar Seguridad
+                        </button>
                     </div>
-                </div>
-                
-                <div class="flex justify-end mt-6">
-                    <button type="submit" class="nav-btn bg-cyan-400 hover:bg-cyan-500 text-gray-900 px-6 py-2 rounded-lg font-semibold transition-colors">
-                        <i class="fas fa-save mr-2"></i>Actualizar Seguridad
-                    </button>
-                </div>
+                </form>
             </div>
         </div>
     </div>
@@ -314,31 +457,87 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM Content Loaded - Initializing tabs...');
+    
     // Sistema de tabs premium
     const tabButtons = document.querySelectorAll('.tab-button');
     const tabContents = document.querySelectorAll('.tab-content');
     
-    tabButtons.forEach(button => {
-        button.addEventListener('click', function() {
+    console.log('Found tab buttons:', tabButtons.length);
+    console.log('Found tab contents:', tabContents.length);
+    
+    // Verificar que tenemos elementos
+    if (tabButtons.length === 0 || tabContents.length === 0) {
+        console.error('No tab buttons or contents found!');
+        return;
+    }
+    
+    // Función para activar un tab
+    function activateTab(targetTab) {
+        console.log('Activating tab:', targetTab);
+        
+        // Remover clases activas de todos los botones
+        tabButtons.forEach(btn => {
+            btn.classList.remove('border-cyan-400', 'text-cyan-400', 'active');
+            btn.classList.add('border-transparent', 'text-gray-400');
+        });
+        
+        // Remover clases activas de todos los contenidos
+        tabContents.forEach(content => {
+            content.classList.remove('active');
+        });
+        
+        // Encontrar el botón correspondiente
+        const targetButton = document.querySelector(`[data-tab="${targetTab}"]`);
+        if (targetButton) {
+            targetButton.classList.add('border-cyan-400', 'text-cyan-400', 'active');
+            targetButton.classList.remove('border-transparent', 'text-gray-400');
+            console.log('Button activated:', targetTab);
+        } else {
+            console.error('Button not found for tab:', targetTab);
+        }
+        
+        // Activar contenido correspondiente
+        const targetContent = document.getElementById(`tab-${targetTab}`);
+        if (targetContent) {
+            targetContent.classList.add('active');
+            console.log('Content activated:', `tab-${targetTab}`);
+        } else {
+            console.error('Content not found:', `tab-${targetTab}`);
+        }
+    }
+    
+    // Agregar event listeners a todos los botones
+    tabButtons.forEach((button, index) => {
+        console.log(`Adding listener to button ${index}:`, button.getAttribute('data-tab'));
+        
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
             const targetTab = this.getAttribute('data-tab');
+            console.log('Tab button clicked:', targetTab);
             
-            // Remover clases activas
-            tabButtons.forEach(btn => {
-                btn.classList.remove('border-cyan-400', 'text-cyan-400', 'active');
-                btn.classList.add('border-transparent', 'text-gray-400');
-            });
-            
-            tabContents.forEach(content => {
-                content.classList.remove('active');
-            });
-            
-            // Activar tab seleccionado
-            this.classList.add('border-cyan-400', 'text-cyan-400', 'active');
-            this.classList.remove('border-transparent', 'text-gray-400');
-            
-            document.getElementById(`tab-${targetTab}`).classList.add('active');
+            activateTab(targetTab);
         });
     });
+    
+    // Asegurar que el primer tab esté activo
+    const firstTab = tabButtons[0];
+    if (firstTab) {
+        const firstTabName = firstTab.getAttribute('data-tab');
+        console.log('Setting first tab as active:', firstTabName);
+        activateTab(firstTabName);
+    }
+    
+    // Test de debugging
+    setTimeout(() => {
+        console.log('Tab system test after 1 second...');
+        const activeButtons = document.querySelectorAll('.tab-button.active');
+        const activeContents = document.querySelectorAll('.tab-content.active');
+        console.log('Active buttons:', activeButtons.length);
+        console.log('Active contents:', activeContents.length);
+    }, 1000);
     
     // Notificaciones premium
     {% if messages %}
@@ -394,6 +593,32 @@ document.addEventListener('DOMContentLoaded', function() {
             if (hasErrors) {
                 e.preventDefault();
                 showAlert('Por favor, complete todos los campos requeridos.', 'error');
+            } else {
+                // Mostrar mensaje de guardado
+                showAlert('Guardando configuración...', 'info');
+            }
+        });
+    });
+    
+    // Agregar feedback visual a los toggles de métodos
+    const metodoToggles = document.querySelectorAll('input[name*="_habilitado"]');
+    metodoToggles.forEach(toggle => {
+        toggle.addEventListener('change', function() {
+            const card = this.closest('.content-premium');
+            const statusBadge = card.querySelector('.ml-2 span');
+            
+            if (this.checked) {
+                card.classList.remove('opacity-75');
+                if (statusBadge) {
+                    statusBadge.className = 'ml-2 px-2 py-1 bg-green-400/20 text-green-400 text-xs rounded-full';
+                    statusBadge.innerHTML = '<i class="fas fa-check mr-1"></i>Activo';
+                }
+            } else {
+                card.classList.add('opacity-75');
+                if (statusBadge) {
+                    statusBadge.className = 'ml-2 px-2 py-1 bg-red-400/20 text-red-400 text-xs rounded-full';
+                    statusBadge.innerHTML = '<i class="fas fa-times mr-1"></i>Inactivo';
+                }
             }
         });
     });

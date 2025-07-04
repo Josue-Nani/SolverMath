@@ -12,6 +12,7 @@ from .models import Perfil, HistorialOperacion
 from sympy import sympify, diff, lambdify, Symbol, symbols, integrate
 from sympy.core.sympify import SympifyError
 from .metodos.newton import newton_raphson
+from datetime import datetime
 import math
 import matplotlib
 matplotlib.use('Agg')
@@ -1563,15 +1564,30 @@ def admin_config_view(request):
             # Actualizar configuración de métodos
             for metodo_config in metodos_config:
                 metodo_key = metodo_config.metodo
+                
+                # Actualizar configuración
                 metodo_config.habilitado = request.POST.get(f'metodo_{metodo_key}_habilitado') == 'on'
-                metodo_config.limite_iteraciones = int(request.POST.get(f'metodo_{metodo_key}_iteraciones', metodo_config.limite_iteraciones))
-                metodo_config.precision = float(request.POST.get(f'metodo_{metodo_key}_precision', metodo_config.precision))
-                metodo_config.tiempo_maximo = int(request.POST.get(f'metodo_{metodo_key}_tiempo', metodo_config.tiempo_maximo))
-                metodo_config.limite_uso_diario = int(request.POST.get(f'metodo_{metodo_key}_uso_diario', metodo_config.limite_uso_diario))
-                metodo_config.limite_uso_usuario = int(request.POST.get(f'metodo_{metodo_key}_uso_usuario', metodo_config.limite_uso_usuario))
+                
+                # Actualizar otros campos con validación
+                try:
+                    metodo_config.limite_iteraciones = int(request.POST.get(f'metodo_{metodo_key}_iteraciones', metodo_config.limite_iteraciones))
+                    metodo_config.precision = float(request.POST.get(f'metodo_{metodo_key}_precision', metodo_config.precision))
+                    metodo_config.tiempo_maximo = int(request.POST.get(f'metodo_{metodo_key}_tiempo', metodo_config.tiempo_maximo))
+                    metodo_config.limite_uso_diario = int(request.POST.get(f'metodo_{metodo_key}_uso_diario', metodo_config.limite_uso_diario))
+                    metodo_config.limite_uso_usuario = int(request.POST.get(f'metodo_{metodo_key}_uso_usuario', metodo_config.limite_uso_usuario))
+                except (ValueError, TypeError):
+                    # Si hay error en conversión, mantener valores anteriores
+                    pass
+                
                 metodo_config.save()
+                
+                # Debug: log para verificar guardado
+                print(f"Método {metodo_key} guardado - Habilitado: {metodo_config.habilitado}")
             
             messages.success(request, 'Configuración de métodos actualizada exitosamente')
+            
+            # Redirigir para evitar reenvío del formulario
+            return redirect('admin_config')
         
         elif seccion == 'test_email':
             # Probar configuración de email
