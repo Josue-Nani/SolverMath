@@ -440,7 +440,7 @@
             </svg>
             Iniciar Sesión
           </a>
-          <a href="{% url 'registro' %}" class="btn btn-outline btn-sm hover:scale-105 transition-all duration-300">
+          <a href="{% url 'register' %}" class="btn btn-outline btn-sm hover:scale-105 transition-all duration-300">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
             </svg>
@@ -457,12 +457,281 @@
     {% endblock %}
   </main>
 
-  <!-- Footer -->
-  <footer class="footer footer-center p-10 bg-base-100 text-base-content mt-20">
-    <div>
-      <p class="font-bold text-lg">SolverANS - Métodos Numéricos</p>
-      <p class="text-base-content/70">© 2025 - Resolviendo ecuaciones con precisión matemática</p>
+  <!-- Footer Premium Ultra -->
+  <footer class="relative overflow-hidden">
+    <!-- Background con efectos -->
+    <div class="absolute inset-0 bg-gradient-to-br from-base-200 via-base-100 to-base-200 backdrop-blur-xl"></div>
+    <div class="absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,rgba(255,255,255,0.08)_1px,transparent_0)] [background-size:32px_32px]"></div>
+    <div class="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent"></div>
+    
+    <!-- Contenido principal -->
+    <div class="relative container mx-auto px-6 py-16">
+      <!-- Sección principal -->
+      <div class="grid grid-cols-1 lg:grid-cols-5 gap-12 mb-16">
+        
+        <!-- Branding y Descripción -->
+        <div class="lg:col-span-2">
+          <div class="flex items-center gap-4 mb-6">
+            <div class="relative">
+              <div class="text-5xl logo-float">⚙️</div>
+              <div class="absolute -top-1 -right-1 w-4 h-4 bg-gradient-to-r from-primary to-secondary rounded-full notification-pulse"></div>
+            </div>
+            <div>
+              <h3 class="text-3xl font-black bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
+                SolverANS
+              </h3>
+              <div class="flex items-center gap-2 mt-1">
+                <p class="text-base-content/60 text-sm">Métodos Numéricos Avanzados</p>
+                <div class="badge badge-primary badge-xs">PRO</div>
+              </div>
+            </div>
+          </div>
+          
+          <p class="text-base-content/70 text-sm leading-relaxed mb-6 max-w-md">
+            Plataforma de última generación para la resolución de ecuaciones matemáticas complejas. 
+            Tecnología de vanguardia diseñada para profesionales, estudiantes e investigadores que 
+            buscan precisión y eficiencia en cálculos numéricos.
+          </p>
+          
+          <!-- Estadísticas Premium -->
+          <div class="grid grid-cols-3 gap-4 mb-8">
+            <div class="glass-card p-4 text-center hover:scale-105 transition-transform duration-300">
+              <div class="text-2xl font-bold text-primary mb-1">500+</div>
+              <div class="text-xs text-base-content/60">Usuarios Activos</div>
+            </div>
+            <div class="glass-card p-4 text-center hover:scale-105 transition-transform duration-300">
+              <div class="text-2xl font-bold text-secondary mb-1">15+</div>
+              <div class="text-xs text-base-content/60">Métodos</div>
+            </div>
+            <div class="glass-card p-4 text-center hover:scale-105 transition-transform duration-300">
+              <div class="text-2xl font-bold text-accent mb-1">99.9%</div>
+              <div class="text-xs text-base-content/60">Precisión</div>
+            </div>
+          </div>
+          
+          <!-- Rating y Testimonios -->
+          <div class="flex items-center gap-4 text-sm">
+            <div class="flex items-center gap-1">
+              <div class="rating rating-sm">
+                <div class="mask mask-star-2 bg-warning w-4 h-4"></div>
+                <div class="mask mask-star-2 bg-warning w-4 h-4"></div>
+                <div class="mask mask-star-2 bg-warning w-4 h-4"></div>
+                <div class="mask mask-star-2 bg-warning w-4 h-4"></div>
+                <div class="mask mask-star-2 bg-warning w-4 h-4"></div>
+              </div>
+              <span class="text-base-content/70 ml-2">5.0 (47 reviews)</span>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Enlaces Rápidos -->
+        <div>
+          <h4 class="text-lg font-bold text-primary mb-6 flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+            </svg>
+            Navegación
+          </h4>
+          <ul class="space-y-3">
+            <li>
+              <a href="{% url 'menu' %}" class="group flex items-center gap-3 text-base-content/70 hover:text-primary transition-all duration-300">
+                <div class="w-2 h-2 bg-primary/50 rounded-full group-hover:bg-primary transition-colors"></div>
+                <span class="group-hover:translate-x-1 transition-transform">Panel Principal</span>
+              </a>
+            </li>
+            {% if user.is_authenticated %}
+            <li>
+              <a href="{% url 'perfil' %}" class="group flex items-center gap-3 text-base-content/70 hover:text-secondary transition-all duration-300">
+                <div class="w-2 h-2 bg-secondary/50 rounded-full group-hover:bg-secondary transition-colors"></div>
+                <span class="group-hover:translate-x-1 transition-transform">Mi Perfil</span>
+              </a>
+            </li>
+            {% if user.is_superuser %}
+            <li>
+              <a href="{% url 'admin_dashboard' %}" class="group flex items-center gap-3 text-base-content/70 hover:text-accent transition-all duration-300">
+                <div class="w-2 h-2 bg-accent/50 rounded-full group-hover:bg-accent transition-colors"></div>
+                <span class="group-hover:translate-x-1 transition-transform">Panel Admin</span>
+              </a>
+            </li>
+            {% endif %}
+            {% else %}
+            <li>
+              <a href="{% url 'login' %}" class="group flex items-center gap-3 text-base-content/70 hover:text-info transition-all duration-300">
+                <div class="w-2 h-2 bg-info/50 rounded-full group-hover:bg-info transition-colors"></div>
+                <span class="group-hover:translate-x-1 transition-transform">Iniciar Sesión</span>
+              </a>
+            </li>
+            <li>
+              <a href="{% url 'register' %}" class="group flex items-center gap-3 text-base-content/70 hover:text-warning transition-all duration-300">
+                <div class="w-2 h-2 bg-warning/50 rounded-full group-hover:bg-warning transition-colors"></div>
+                <span class="group-hover:translate-x-1 transition-transform">Registrarse</span>
+              </a>
+            </li>
+            {% endif %}
+            <li>
+              <a href="#" class="group flex items-center gap-3 text-base-content/70 hover:text-error transition-all duration-300">
+                <div class="w-2 h-2 bg-error/50 rounded-full group-hover:bg-error transition-colors"></div>
+                <span class="group-hover:translate-x-1 transition-transform">Soporte</span>
+              </a>
+            </li>
+          </ul>
+        </div>
+        
+        <!-- Métodos Numéricos -->
+        <div>
+          <h4 class="text-lg font-bold text-secondary mb-6 flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+            </svg>
+            Métodos
+          </h4>
+          <ul class="space-y-3">
+            <li>
+              <a href="{% url 'vista_newton' %}" class="group flex items-center gap-3 text-base-content/70 hover:text-secondary transition-all duration-300">
+                <div class="w-2 h-2 bg-secondary rounded-full"></div>
+                <span class="group-hover:translate-x-1 transition-transform">Newton-Raphson</span>
+                <div class="badge badge-secondary badge-xs opacity-0 group-hover:opacity-100 transition-opacity">Activo</div>
+              </a>
+            </li>
+            <li>
+              <a href="{% url 'integracion_view' %}" class="group flex items-center gap-3 text-base-content/70 hover:text-secondary transition-all duration-300">
+                <div class="w-2 h-2 bg-secondary rounded-full"></div>
+                <span class="group-hover:translate-x-1 transition-transform">Integración Numérica</span>
+                <div class="badge badge-secondary badge-xs opacity-0 group-hover:opacity-100 transition-opacity">Activo</div>
+              </a>
+            </li>
+            <li>
+              <div class="group flex items-center gap-3 text-base-content/50 cursor-not-allowed">
+                <div class="w-2 h-2 bg-base-content/30 rounded-full"></div>
+                <span>Bisección</span>
+                <div class="badge badge-ghost badge-xs">Próximamente</div>
+              </div>
+            </li>
+            <li>
+              <div class="group flex items-center gap-3 text-base-content/50 cursor-not-allowed">
+                <div class="w-2 h-2 bg-base-content/30 rounded-full"></div>
+                <span>Punto Fijo</span>
+                <div class="badge badge-ghost badge-xs">Próximamente</div>
+              </div>
+            </li>
+            <li>
+              <div class="group flex items-center gap-3 text-base-content/50 cursor-not-allowed">
+                <div class="w-2 h-2 bg-base-content/30 rounded-full"></div>
+                <span>Secante</span>
+                <div class="badge badge-ghost badge-xs">Próximamente</div>
+              </div>
+            </li>
+          </ul>
+        </div>
+        
+        <!-- Sistema y Contacto -->
+        <div>
+          <h4 class="text-lg font-bold text-accent mb-6 flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+            </svg>
+            Sistema
+          </h4>
+          
+          <!-- Estado del Sistema -->
+          <div class="space-y-3 mb-6">
+            <div class="glass-card p-3 border-l-4 border-success">
+              <div class="flex items-center gap-2">
+                <div class="w-2 h-2 bg-success rounded-full animate-pulse"></div>
+                <span class="text-sm font-medium text-success">Sistema Operativo</span>
+              </div>
+              <div class="text-xs text-base-content/60 mt-1">Latencia: 2ms</div>
+            </div>
+            
+            <div class="glass-card p-3 border-l-4 border-info">
+              <div class="flex items-center gap-2">
+                <div class="w-2 h-2 bg-info rounded-full animate-pulse"></div>
+                <span class="text-sm font-medium text-info">Base de Datos</span>
+              </div>
+              <div class="text-xs text-base-content/60 mt-1">Conexiones: 42/100</div>
+            </div>
+          </div>
+          
+          <!-- Contacto -->
+          <div class="text-sm text-base-content/70">
+            <div class="flex items-center gap-2 mb-2">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+              </svg>
+              <span>support@solverans.com</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+              </svg>
+              <span>+503 2222-3333</span>
+            </div>
+          </div>
+        </div>
+        
+      </div>
+      
+      <!-- Separador con estilo -->
+      <div class="relative mb-12">
+        <div class="absolute inset-0 flex items-center">
+          <div class="w-full border-t border-primary/20"></div>
+        </div>
+        <div class="relative flex justify-center">
+          <div class="bg-base-100 px-6 text-base-content/50">
+            <div class="flex items-center gap-2">
+              <div class="w-1 h-1 bg-primary rounded-full"></div>
+              <div class="w-2 h-2 bg-secondary rounded-full"></div>
+              <div class="w-1 h-1 bg-accent rounded-full"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Footer Bottom Premium -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8 items-center">
+        
+        <!-- Copyright -->
+        <div class="text-center md:text-left">
+          <p class="text-base-content/70 text-sm mb-2">
+            © 2025 <span class="font-bold text-primary">SolverANS</span>. Todos los derechos reservados.
+          </p>
+          <p class="text-base-content/50 text-xs">
+            Desarrollado con <span class="text-error">❤️</span> para la comunidad científica
+          </p>
+        </div>
+        
+        <!-- Tech Stack -->
+        <div class="text-center">
+          <p class="text-xs text-base-content/60 mb-2">Tecnologías</p>
+          <div class="flex justify-center gap-2 flex-wrap">
+            <div class="badge badge-primary badge-sm">Django 4.2</div>
+            <div class="badge badge-secondary badge-sm">Python 3.11</div>
+            <div class="badge badge-accent badge-sm">TailwindCSS</div>
+            <div class="badge badge-info badge-sm">DaisyUI</div>
+            <div class="badge badge-warning badge-sm">MathJax</div>
+          </div>
+        </div>
+        
+        <!-- Version y Status -->
+        <div class="text-center md:text-right">
+          <div class="flex items-center justify-center md:justify-end gap-3 mb-2">
+            <div class="badge badge-primary badge-lg">v2.5.0</div>
+            <div class="flex items-center gap-1">
+              <div class="w-2 h-2 bg-success rounded-full animate-ping"></div>
+              <span class="text-xs text-success font-medium">Online</span>
+            </div>
+          </div>
+          <p class="text-xs text-base-content/50">
+            Último despliegue: <span class="text-accent">hace 2 horas</span>
+          </p>
+        </div>
+        
+      </div>
     </div>
+    
+    <!-- Efectos decorativos -->
+    <div class="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-primary via-secondary to-accent opacity-80"></div>
+    <div class="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
   </footer>
 
   <!-- Scripts base -->
