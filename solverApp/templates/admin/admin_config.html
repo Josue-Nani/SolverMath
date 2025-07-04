@@ -1,0 +1,402 @@
+{% extends 'admin/admin_base.html' %}
+{% load static %}
+
+{% block title %}Configuración del Sistema - Admin{% endblock %}
+
+{% block extra_css %}
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+    .tab-content {
+        display: none;
+    }
+    .tab-content.active {
+        display: block;
+    }
+</style>
+{% endblock %}
+
+{% block admin_content %}
+<!-- Header Premium -->
+<div class="header-premium p-8 text-center mb-8 animate-fade-in">
+    <h1 class="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent title-glow">
+        <i class="fas fa-cogs mr-3"></i>
+        Configuración del Sistema
+    </h1>
+    <p class="text-lg md:text-xl text-gray-300 opacity-90">
+        Gestiona todos los aspectos del sistema desde un solo lugar
+    </p>
+    <div class="mt-6 flex justify-center">
+        <div class="w-32 h-1 bg-gradient-to-r from-transparent via-cyan-400 to-transparent rounded-full"></div>
+    </div>
+</div>
+
+
+<!-- Tabs de Configuración -->
+<div class="content-premium animate-fade-in">
+    <div class="border-b border-cyan-400/30">
+        <nav class="flex space-x-8 px-6" id="config-tabs">
+            <button class="tab-button py-4 px-1 border-b-2 border-cyan-400 text-sm font-medium text-cyan-400 active" data-tab="general">
+                <i class="fas fa-cog mr-2"></i>General
+            </button>
+            <button class="tab-button py-4 px-1 border-b-2 border-transparent text-sm font-medium text-gray-400 hover:text-cyan-400 hover:border-cyan-400/50" data-tab="metodos">
+                <i class="fas fa-calculator mr-2"></i>Métodos
+            </button>
+            <button class="tab-button py-4 px-1 border-b-2 border-transparent text-sm font-medium text-gray-400 hover:text-cyan-400 hover:border-cyan-400/50" data-tab="limites">
+                <i class="fas fa-gauge mr-2"></i>Límites
+            </button>
+            <button class="tab-button py-4 px-1 border-b-2 border-transparent text-sm font-medium text-gray-400 hover:text-cyan-400 hover:border-cyan-400/50" data-tab="email">
+                <i class="fas fa-envelope mr-2"></i>Email
+            </button>
+            <button class="tab-button py-4 px-1 border-b-2 border-transparent text-sm font-medium text-gray-400 hover:text-cyan-400 hover:border-cyan-400/50" data-tab="seguridad">
+                <i class="fas fa-shield-alt mr-2"></i>Seguridad
+            </button>
+        </nav>
+    </div>
+
+    <div class="p-6">
+        <!-- Tab General -->
+        <div id="tab-general" class="tab-content active">
+            <div class="max-w-4xl">
+                <h3 class="text-xl font-semibold text-cyan-400 mb-6">
+                    <i class="fas fa-cog mr-2"></i>Configuración General
+                </h3>
+                
+                <form method="post" class="space-y-6">
+                    {% csrf_token %}
+                    <input type="hidden" name="seccion" value="general">
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-2">
+                                <i class="fas fa-tag mr-2 text-cyan-400"></i>Nombre del Sistema
+                            </label>
+                            <input type="text" name="nombre_sistema" value="{{ config.nombre_sistema|default:'SolverANS' }}"
+                                   class="w-full px-4 py-2 bg-gray-700/50 border border-cyan-400/30 rounded-lg text-white focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-2">
+                                <i class="fas fa-info-circle mr-2 text-cyan-400"></i>Descripción
+                            </label>
+                            <input type="text" name="descripcion_sistema" value="{{ config.descripcion_sistema|default:'Sistema de Análisis Numérico' }}"
+                                   class="w-full px-4 py-2 bg-gray-700/50 border border-cyan-400/30 rounded-lg text-white focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400">
+                        </div>
+                    </div>
+                    
+                    <div class="border-t border-cyan-400/30 pt-6">
+                        <div class="flex items-center justify-between p-4 bg-gray-700/30 rounded-lg">
+                            <div>
+                                <h4 class="text-lg font-medium text-cyan-400">Modo Mantenimiento</h4>
+                                <p class="text-sm text-gray-400">Activa el modo mantenimiento para realizar actualizaciones</p>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" name="mantenimiento_activo" class="sr-only peer"
+                                       {% if config.mantenimiento_activo %}checked{% endif %}>
+                                <div class="w-11 h-6 bg-gray-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-cyan-400/25 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-cyan-400"></div>
+                            </label>
+                        </div>
+                        
+                        <div class="mt-4">
+                            <label class="block text-sm font-medium text-gray-300 mb-2">
+                                <i class="fas fa-comment mr-2 text-cyan-400"></i>Mensaje de Mantenimiento
+                            </label>
+                            <textarea name="mensaje_mantenimiento" rows="3"
+                                      class="w-full px-4 py-2 bg-gray-700/50 border border-cyan-400/30 rounded-lg text-white focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400">{{ config.mensaje_mantenimiento|default:'El sistema está en mantenimiento. Vuelve pronto.' }}</textarea>
+                        </div>
+                    </div>
+                    
+                    <div class="flex justify-end">
+                        <button type="submit" class="nav-btn bg-cyan-400 hover:bg-cyan-500 text-gray-900 px-6 py-2 rounded-lg font-semibold transition-colors">
+                            <i class="fas fa-save mr-2"></i>Guardar Cambios
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Tab Métodos -->
+        <div id="tab-metodos" class="tab-content">
+            <div class="max-w-6xl">
+                <h3 class="text-xl font-semibold text-cyan-400 mb-6">
+                    <i class="fas fa-calculator mr-2"></i>Gestión de Métodos
+                </h3>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="content-premium p-6 border border-cyan-400/30">
+                        <div class="flex items-center justify-between mb-4">
+                            <h4 class="text-lg font-medium text-cyan-400">Newton-Raphson</h4>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" class="sr-only peer" checked>
+                                <div class="w-11 h-6 bg-gray-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-cyan-400/25 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-cyan-400"></div>
+                            </label>
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-300 mb-1">Iteraciones Máx.</label>
+                                <input type="number" value="100" class="w-full px-3 py-2 bg-gray-700/50 border border-cyan-400/30 rounded-md text-white focus:ring-2 focus:ring-cyan-400 text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-300 mb-1">Precisión</label>
+                                <input type="number" value="0.0001" step="0.00001" class="w-full px-3 py-2 bg-gray-700/50 border border-cyan-400/30 rounded-md text-white focus:ring-2 focus:ring-cyan-400 text-sm">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="content-premium p-6 border border-cyan-400/30">
+                        <div class="flex items-center justify-between mb-4">
+                            <h4 class="text-lg font-medium text-cyan-400">Integración Numérica</h4>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" class="sr-only peer" checked>
+                                <div class="w-11 h-6 bg-gray-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-cyan-400/25 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-cyan-400"></div>
+                            </label>
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-300 mb-1">Subdivisiones</label>
+                                <input type="number" value="1000" class="w-full px-3 py-2 bg-gray-700/50 border border-cyan-400/30 rounded-md text-white focus:ring-2 focus:ring-cyan-400 text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-300 mb-1">Precisión</label>
+                                <input type="number" value="0.0001" step="0.00001" class="w-full px-3 py-2 bg-gray-700/50 border border-cyan-400/30 rounded-md text-white focus:ring-2 focus:ring-cyan-400 text-sm">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flex justify-end mt-6">
+                    <button type="submit" class="nav-btn bg-cyan-400 hover:bg-cyan-500 text-gray-900 px-6 py-2 rounded-lg font-semibold transition-colors">
+                        <i class="fas fa-save mr-2"></i>Guardar Configuración
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab Límites -->
+        <div id="tab-limites" class="tab-content">
+            <div class="max-w-4xl">
+                <h3 class="text-xl font-semibold text-cyan-400 mb-6">
+                    <i class="fas fa-gauge mr-2"></i>Límites de Uso
+                </h3>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="content-premium p-6 border-l-4 border-blue-400">
+                        <div class="flex items-center mb-4">
+                            <div class="bg-blue-400 p-2 rounded-full mr-3">
+                                <i class="fas fa-user text-white"></i>
+                            </div>
+                            <h4 class="text-lg font-medium text-cyan-400">Por Usuario</h4>
+                        </div>
+                        <label class="block text-sm font-medium text-gray-300 mb-2">Operaciones por Usuario</label>
+                        <input type="number" value="50" class="w-full px-4 py-2 bg-gray-700/50 border border-cyan-400/30 rounded-lg text-white focus:ring-2 focus:ring-cyan-400">
+                    </div>
+                    
+                    <div class="content-premium p-6 border-l-4 border-green-400">
+                        <div class="flex items-center mb-4">
+                            <div class="bg-green-400 p-2 rounded-full mr-3">
+                                <i class="fas fa-calendar-day text-white"></i>
+                            </div>
+                            <h4 class="text-lg font-medium text-cyan-400">Por Día</h4>
+                        </div>
+                        <label class="block text-sm font-medium text-gray-300 mb-2">Operaciones por Día</label>
+                        <input type="number" value="1000" class="w-full px-4 py-2 bg-gray-700/50 border border-cyan-400/30 rounded-lg text-white focus:ring-2 focus:ring-cyan-400">
+                    </div>
+                    
+                    <div class="content-premium p-6 border-l-4 border-orange-400">
+                        <div class="flex items-center mb-4">
+                            <div class="bg-orange-400 p-2 rounded-full mr-3">
+                                <i class="fas fa-clock text-white"></i>
+                            </div>
+                            <h4 class="text-lg font-medium text-cyan-400">Sesión</h4>
+                        </div>
+                        <label class="block text-sm font-medium text-gray-300 mb-2">Tiempo de Sesión (segundos)</label>
+                        <input type="number" value="3600" class="w-full px-4 py-2 bg-gray-700/50 border border-cyan-400/30 rounded-lg text-white focus:ring-2 focus:ring-cyan-400">
+                    </div>
+                </div>
+                
+                <div class="flex justify-end mt-6">
+                    <button type="submit" class="nav-btn bg-cyan-400 hover:bg-cyan-500 text-gray-900 px-6 py-2 rounded-lg font-semibold transition-colors">
+                        <i class="fas fa-save mr-2"></i>Actualizar Límites
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab Email -->
+        <div id="tab-email" class="tab-content">
+            <div class="max-w-4xl">
+                <h3 class="text-xl font-semibold text-cyan-400 mb-6">
+                    <i class="fas fa-envelope mr-2"></i>Configuración de Email
+                </h3>
+                
+                <div class="flex items-center justify-between p-4 bg-gray-700/30 rounded-lg mb-6">
+                    <div>
+                        <h4 class="text-lg font-medium text-cyan-400">Habilitar Email</h4>
+                        <p class="text-sm text-gray-400">Activa el sistema de notificaciones por email</p>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" class="sr-only peer">
+                        <div class="w-11 h-6 bg-gray-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-cyan-400/25 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-cyan-400"></div>
+                    </label>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-300 mb-2">Host SMTP</label>
+                        <input type="text" placeholder="smtp.gmail.com" class="w-full px-4 py-2 bg-gray-700/50 border border-cyan-400/30 rounded-lg text-white focus:ring-2 focus:ring-cyan-400">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-300 mb-2">Puerto SMTP</label>
+                        <input type="number" value="587" class="w-full px-4 py-2 bg-gray-700/50 border border-cyan-400/30 rounded-lg text-white focus:ring-2 focus:ring-cyan-400">
+                    </div>
+                </div>
+                
+                <div class="flex justify-end mt-6">
+                    <button type="submit" class="nav-btn bg-cyan-400 hover:bg-cyan-500 text-gray-900 px-6 py-2 rounded-lg font-semibold transition-colors">
+                        <i class="fas fa-save mr-2"></i>Guardar Configuración
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab Seguridad -->
+        <div id="tab-seguridad" class="tab-content">
+            <div class="max-w-4xl">
+                <h3 class="text-xl font-semibold text-cyan-400 mb-6">
+                    <i class="fas fa-shield-alt mr-2"></i>Configuración de Seguridad
+                </h3>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="content-premium p-6 border-l-4 border-red-400">
+                        <div class="flex items-center mb-4">
+                            <div class="bg-red-400 p-2 rounded-full mr-3">
+                                <i class="fas fa-shield-alt text-white"></i>
+                            </div>
+                            <h4 class="text-lg font-medium text-cyan-400">Control de Acceso</h4>
+                        </div>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-300 mb-2">Intentos de Login Máximos</label>
+                                <input type="number" value="5" class="w-full px-4 py-2 bg-gray-700/50 border border-cyan-400/30 rounded-lg text-white focus:ring-2 focus:ring-cyan-400">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-300 mb-2">Tiempo de Bloqueo (segundos)</label>
+                                <input type="number" value="300" class="w-full px-4 py-2 bg-gray-700/50 border border-cyan-400/30 rounded-lg text-white focus:ring-2 focus:ring-cyan-400">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="content-premium p-6 border-l-4 border-blue-400">
+                        <div class="flex items-center mb-4">
+                            <div class="bg-blue-400 p-2 rounded-full mr-3">
+                                <i class="fas fa-info-circle text-white"></i>
+                            </div>
+                            <h4 class="text-lg font-medium text-cyan-400">Información</h4>
+                        </div>
+                        <div class="space-y-3 text-sm text-gray-400">
+                            <p><strong class="text-cyan-400">Intentos Máximos:</strong> Número de intentos de login antes del bloqueo</p>
+                            <p><strong class="text-cyan-400">Tiempo de Bloqueo:</strong> Tiempo en segundos que el usuario permanece bloqueado</p>
+                            <p><strong class="text-cyan-400">Recomendación:</strong> Usar 5 intentos y 300 segundos (5 minutos) de bloqueo</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flex justify-end mt-6">
+                    <button type="submit" class="nav-btn bg-cyan-400 hover:bg-cyan-500 text-gray-900 px-6 py-2 rounded-lg font-semibold transition-colors">
+                        <i class="fas fa-save mr-2"></i>Actualizar Seguridad
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Sistema de tabs premium
+    const tabButtons = document.querySelectorAll('.tab-button');
+    const tabContents = document.querySelectorAll('.tab-content');
+    
+    tabButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const targetTab = this.getAttribute('data-tab');
+            
+            // Remover clases activas
+            tabButtons.forEach(btn => {
+                btn.classList.remove('border-cyan-400', 'text-cyan-400', 'active');
+                btn.classList.add('border-transparent', 'text-gray-400');
+            });
+            
+            tabContents.forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // Activar tab seleccionado
+            this.classList.add('border-cyan-400', 'text-cyan-400', 'active');
+            this.classList.remove('border-transparent', 'text-gray-400');
+            
+            document.getElementById(`tab-${targetTab}`).classList.add('active');
+        });
+    });
+    
+    // Notificaciones premium
+    {% if messages %}
+        {% for message in messages %}
+            showAlert('{{ message }}', '{{ message.tags }}');
+        {% endfor %}
+    {% endif %}
+    
+    // Función para mostrar alertas premium
+    function showAlert(message, type = 'success') {
+        const alertDiv = document.createElement('div');
+        const colorClass = type === 'success' ? 'border-green-400 bg-green-400/10' : 
+                          type === 'error' ? 'border-red-400 bg-red-400/10' : 
+                          'border-yellow-400 bg-yellow-400/10';
+        
+        alertDiv.className = `fixed top-4 right-4 z-50 max-w-sm rounded-lg shadow-xl border-l-4 ${colorClass} backdrop-filter backdrop-blur-lg p-4 animate-fade-in`;
+        alertDiv.innerHTML = `
+            <div class="flex items-center">
+                <i class="fas fa-${type === 'success' ? 'check-circle text-green-400' : type === 'error' ? 'exclamation-triangle text-red-400' : 'info-circle text-yellow-400'} mr-3"></i>
+                <div class="flex-1">
+                    <p class="text-sm font-medium text-white">${message}</p>
+                </div>
+                <button onclick="this.parentElement.parentElement.remove()" class="ml-4 text-gray-400 hover:text-white">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        `;
+        document.body.appendChild(alertDiv);
+        
+        setTimeout(() => {
+            if (alertDiv.parentElement) {
+                alertDiv.remove();
+            }
+        }, 5000);
+    }
+    
+    // Validación de formularios
+    const forms = document.querySelectorAll('form');
+    forms.forEach(form => {
+        form.addEventListener('submit', function(e) {
+            const requiredFields = form.querySelectorAll('input[required]');
+            let hasErrors = false;
+            
+            requiredFields.forEach(field => {
+                if (!field.value.trim()) {
+                    field.classList.add('border-red-400');
+                    hasErrors = true;
+                } else {
+                    field.classList.remove('border-red-400');
+                }
+            });
+            
+            if (hasErrors) {
+                e.preventDefault();
+                showAlert('Por favor, complete todos los campos requeridos.', 'error');
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

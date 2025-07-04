@@ -1,0 +1,244 @@
+{% extends 'admin/admin_base.html' %}
+{% load static %}
+
+{% block title %}Visor de Logs - Admin{% endblock %}
+
+{% block extra_css %}
+<style>
+    .log-recent {
+        background-color: #fef3c7 !important;
+        border-left: 4px solid #f59e0b !important;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="logs-container">
+    <div class="logs-header">
+        <h1><i class="fas fa-file-alt"></i> Visor de Logs del Sistema</h1>
+        <p>Monitorea la actividad y eventos del sistema en tiempo real</p>
+    </div>
+    
+    <!-- Estadísticas -->
+    <div class="logs-stats">
+        <div class="stat-card info">
+            <i class="fas fa-info-circle"></i>
+            <div class="stat-number">{{ total_logs }}</div>
+            <div class="stat-label">Total Logs</div>
+        </div>
+        <div class="stat-card warning">
+            <i class="fas fa-exclamation-triangle"></i>
+            <div class="stat-number">0</div>
+            <div class="stat-label">Advertencias</div>
+        </div>
+        <div class="stat-card error">
+            <i class="fas fa-times-circle"></i>
+            <div class="stat-number">0</div>
+            <div class="stat-label">Errores</div>
+        </div>
+        <div class="stat-card debug">
+            <i class="fas fa-bug"></i>
+            <div class="stat-number">0</div>
+            <div class="stat-label">Debug</div>
+        </div>
+    </div>
+    
+    <!-- Acciones -->
+    <div class="log-actions">
+        <button class="btn-action btn-refresh" onclick="location.reload()">
+            <i class="fas fa-sync"></i>
+            Actualizar
+        </button>
+        <button class="btn-action btn-export" onclick="exportLogs()">
+            <i class="fas fa-download"></i>
+            Exportar
+        </button>
+        <button class="btn-action" onclick="clearLogs()">
+            <i class="fas fa-trash"></i>
+            Limpiar Logs
+        </button>
+    </div>
+    
+    <!-- Filtros -->
+    <div class="logs-filters">
+        <form method="get" class="filters-row">
+            <div class="filter-group">
+                <label for="level">Nivel:</label>
+                <select name="level" id="level">
+                    <option value="all" {% if level_filter == 'all' %}selected{% endif %}>Todos</option>
+                    {% for level in levels %}
+                        <option value="{{ level }}" {% if level_filter == level %}selected{% endif %}>{{ level }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <label for="category">Categoría:</label>
+                <select name="category" id="category">
+                    <option value="all" {% if category_filter == 'all' %}selected{% endif %}>Todas</option>
+                    {% for category in categories %}
+                        <option value="{{ category }}" {% if category_filter == category %}selected{% endif %}>{{ category }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <label for="search">Buscar:</label>
+                <input type="text" name="search" id="search" placeholder="Buscar en logs..." value="{{ request.GET.search }}">
+            </div>
+            
+            <div class="filter-actions">
+                <button type="submit" class="btn-filter">
+                    <i class="fas fa-filter"></i>
+                    Filtrar
+                </button>
+                <a href="{% url 'admin_logs' %}" class="btn-clear">
+                    <i class="fas fa-times"></i>
+                    Limpiar
+                </a>
+            </div>
+        </form>
+    </div>
+    
+    <!-- Tabla de Logs -->
+    <div class="logs-table">
+        {% if logs %}
+            <table>
+                <thead>
+                    <tr>
+                        <th><i class="fas fa-clock"></i> Timestamp</th>
+                        <th><i class="fas fa-tag"></i> Nivel</th>
+                        <th><i class="fas fa-user"></i> Usuario</th>
+                        <th><i class="fas fa-comment"></i> Mensaje</th>
+                        <th><i class="fas fa-info"></i> Detalles</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in logs %}
+                    <tr>
+                        <td class="log-timestamp">
+                            {{ log.timestamp|date:"d/m/Y H:i:s" }}
+                        </td>
+                        <td>
+                            <span class="log-level {{ log.level|lower }}">
+                                {{ log.level }}
+                            </span>
+                        </td>
+                        <td>
+                            {% if log.user %}
+                                <strong>{{ log.user }}</strong>
+                            {% else %}
+                                <em>Sistema</em>
+                            {% endif %}
+                        </td>
+                        <td class="log-message">
+                            {% if log.message %}
+                                {{ log.message }}
+                            {% else %}
+                                {{ log.action }}
+                            {% endif %}
+                        </td>
+                        <td class="log-details">
+                            {% if log.details %}
+                                {{ log.details }}
+                            {% elif log.category %}
+                                <span class="text-muted">{{ log.category }}</span>
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            
+            <!-- Paginación -->
+            {% if logs.has_other_pages %}
+                <div class="pagination">
+                    {% if logs.has_previous %}
+                        <a href="?page=1{% if level_filter != 'all' %}&level={{ level_filter }}{% endif %}{% if category_filter != 'all' %}&category={{ category_filter }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">&laquo; Primera</a>
+                        <a href="?page={{ logs.previous_page_number }}{% if level_filter != 'all' %}&level={{ level_filter }}{% endif %}{% if category_filter != 'all' %}&category={{ category_filter }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">&lsaquo; Anterior</a>
+                    {% endif %}
+                    
+                    <span class="current">
+                        Página {{ logs.number }} de {{ logs.paginator.num_pages }}
+                    </span>
+                    
+                    {% if logs.has_next %}
+                        <a href="?page={{ logs.next_page_number }}{% if level_filter != 'all' %}&level={{ level_filter }}{% endif %}{% if category_filter != 'all' %}&category={{ category_filter }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">Siguiente &rsaquo;</a>
+                        <a href="?page={{ logs.paginator.num_pages }}{% if level_filter != 'all' %}&level={{ level_filter }}{% endif %}{% if category_filter != 'all' %}&category={{ category_filter }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">Última &raquo;</a>
+                    {% endif %}
+                </div>
+            {% endif %}
+        {% else %}
+            <div class="empty-state">
+                <i class="fas fa-file-alt"></i>
+                <h3>No hay logs disponibles</h3>
+                <p>No se encontraron logs que coincidan con los filtros seleccionados</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+function exportLogs() {
+    const params = new URLSearchParams(window.location.search);
+    params.set('export', 'json');
+    window.location.href = `{% url 'admin_logs' %}?${params.toString()}`;
+}
+
+function clearLogs() {
+    if (confirm('¿Estás seguro de que quieres limpiar todos los logs? Esta acción no se puede deshacer.')) {
+        fetch('{% url 'admin_logs' %}', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: 'action=clear_logs'
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Error al limpiar logs: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error al limpiar logs');
+        });
+    }
+}
+
+// Auto-refresh cada 30 segundos
+setInterval(() => {
+    const refreshBtn = document.querySelector('.btn-refresh');
+    if (refreshBtn && !refreshBtn.disabled) {
+        // Solo refrescar si no hay filtros activos
+        if (window.location.search === '' || window.location.search === '?') {
+            location.reload();
+        }
+    }
+}, 30000);
+
+// Resaltar logs recientes
+document.addEventListener('DOMContentLoaded', function() {
+    const rows = document.querySelectorAll('.logs-table tbody tr');
+    const now = new Date();
+    const fiveMinutesAgo = new Date(now.getTime() - 5 * 60 * 1000);
+    
+    rows.forEach(row => {
+        const timestampCell = row.querySelector('.log-timestamp');
+        if (timestampCell) {
+            const timestamp = new Date(timestampCell.textContent);
+            if (timestamp > fiveMinutesAgo) {
+                row.style.backgroundColor = '#fff3cd';
+                row.style.borderLeft = '4px solid #ffc107';
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

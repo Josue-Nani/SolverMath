@@ -35,6 +35,7 @@ urlpatterns = [
 
      # Vista de administrador
      path('admin-panel/', views.admin_panel_view, name='admin_panel'),
+     path('admin-panel/dashboard/', views.admin_dashboard_view, name='admin_dashboard'),
      path('admin-panel/usuarios/', views.admin_usuarios_view, name='admin_usuarios'),
      path('admin-panel/usuarios/<int:user_id>/', views.admin_usuario_detalle, name='admin_usuario_detalle'),
      path('admin-panel/usuarios/<int:user_id>/toggle-active/', views.admin_toggle_user_active, name='admin_toggle_user_active'),
@@ -42,6 +43,11 @@ urlpatterns = [
      path('admin-panel/historial/', views.admin_historial_view, name='admin_historial'),
      path('admin-panel/historial/<int:historial_id>/delete/', views.admin_delete_historial, name='admin_delete_historial'),
      path('admin-panel/estadisticas/', views.admin_estadisticas_view, name='admin_estadisticas'),
+     path('admin-panel/backup/', views.admin_backup_view, name='admin_backup'),
+     path('admin-panel/logs/', views.admin_logs_view, name='admin_logs'),
+     path('admin-panel/reports/', views.admin_reports_view, name='admin_reports'),
+     path('admin-panel/maintenance/', views.admin_maintenance_view, name='admin_maintenance'),
+     path('admin-panel/config/', views.admin_config_view, name='admin_config'),
 
 ]
 if settings.DEBUG:

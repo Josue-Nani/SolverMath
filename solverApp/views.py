@@ -1,9 +1,12 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.views import LoginView
 from django.urls import reverse_lazy
 from django.contrib.auth.models import User
+from django.db.models import Q, Count, Avg
+from django.contrib import messages
+from django.conf import settings
 from . forms import RegistroUsuarioForm, LoginUsuarioForm, EditarPerfilForm
 from .models import Perfil, HistorialOperacion
 from sympy import sympify, diff, lambdify, Symbol, symbols, integrate
@@ -1038,3 +1041,578 @@ def admin_estadisticas_view(request):
     }
     
     return render(request, 'admin/admin_estadisticas.html', context)
+
+
+@user_passes_test(es_superusuario)
+def admin_dashboard_view(request):
+    """Vista principal del dashboard analytics"""
+    from django.utils import timezone
+    from datetime import timedelta
+    from django.db.models import Count, Avg
+    
+    # Obtener estadísticas generales
+    total_usuarios = User.objects.count()
+    usuarios_activos = User.objects.filter(is_active=True).count()
+    total_operaciones = HistorialOperacion.objects.count()
+    
+    # Operaciones de hoy
+    hoy = timezone.now().date()
+    operaciones_hoy = HistorialOperacion.objects.filter(fecha__date=hoy).count()
+    
+    # Tiempo promedio de cálculo (simulado - podrías agregar este campo al modelo)
+    tiempo_promedio = 2.5
+    
+    # Datos para gráficos - últimos 30 días
+    fecha_inicio = timezone.now() - timedelta(days=30)
+    operaciones_por_dia = []
+    
+    for i in range(30):
+        fecha = fecha_inicio + timedelta(days=i)
+        count = HistorialOperacion.objects.filter(fecha__date=fecha.date()).count()
+        operaciones_por_dia.append(count)
+    
+    # Métodos más utilizados
+    metodos_stats = (HistorialOperacion.objects
+                    .values('metodo')
+                    .annotate(count=Count('metodo'))
+                    .order_by('-count')[:5])
+    
+    # Actividad reciente
+    actividad_reciente = HistorialOperacion.objects.order_by('-fecha')[:10]
+    
+    # Usuarios registrados en los últimos 7 días
+    hace_7_dias = timezone.now() - timedelta(days=7)
+    nuevos_usuarios = User.objects.filter(date_joined__gte=hace_7_dias).count()
+    
+    context = {
+        'total_usuarios': total_usuarios,
+        'usuarios_activos': usuarios_activos,
+        'total_operaciones': total_operaciones,
+        'operaciones_hoy': operaciones_hoy,
+        'tiempo_promedio': tiempo_promedio,
+        'operaciones_por_dia': operaciones_por_dia,
+        'metodos_stats': metodos_stats,
+        'actividad_reciente': actividad_reciente,
+        'nuevos_usuarios': nuevos_usuarios,
+    }
+    
+    return render(request, 'admin/admin_dashboard.html', context)
+
+
+@user_passes_test(es_superusuario)
+def admin_backup_view(request):
+    """Vista completa para sistema de respaldos"""
+    import os
+    import subprocess
+    from datetime import datetime
+    from django.conf import settings
+    
+    backup_dir = os.path.join(settings.BASE_DIR, 'backups')
+    os.makedirs(backup_dir, exist_ok=True)
+    
+    # Listar backups existentes
+    backups = []
+    if os.path.exists(backup_dir):
+        for filename in os.listdir(backup_dir):
+            if filename.endswith('.db') or filename.endswith('.json'):
+                filepath = os.path.join(backup_dir, filename)
+                stat = os.stat(filepath)
+                backups.append({
+                    'filename': filename,
+                    'size': stat.st_size,
+                    'created': datetime.fromtimestamp(stat.st_ctime),
+                    'path': filepath
+                })
+    
+    backups.sort(key=lambda x: x['created'], reverse=True)
+    
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        
+        if action == 'create_backup':
+            timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+            backup_filename = f'backup_{timestamp}.json'
+            backup_path = os.path.join(backup_dir, backup_filename)
+            
+            try:
+                # Crear backup usando dumpdata
+                result = subprocess.run([
+                    'python', 'manage.py', 'dumpdata', 
+                    '--indent=2', '--output', backup_path
+                ], capture_output=True, text=True, cwd=settings.BASE_DIR)
+                
+                if result.returncode == 0:
+                    messages.success(request, f'Backup creado exitosamente: {backup_filename}')
+                else:
+                    messages.error(request, f'Error al crear backup: {result.stderr}')
+            except Exception as e:
+                messages.error(request, f'Error al crear backup: {str(e)}')
+        
+        elif action == 'delete_backup':
+            filename = request.POST.get('filename')
+            if filename:
+                filepath = os.path.join(backup_dir, filename)
+                try:
+                    os.remove(filepath)
+                    messages.success(request, f'Backup {filename} eliminado exitosamente')
+                except Exception as e:
+                    messages.error(request, f'Error al eliminar backup: {str(e)}')
+        
+        return redirect('admin_backup')
+    
+    context = {
+        'backups': backups,
+        'backup_dir': backup_dir,
+        'total_backups': len(backups),
+        'total_size': sum(b['size'] for b in backups)
+    }
+    
+    return render(request, 'admin/admin_backup.html', context)
+
+
+@user_passes_test(es_superusuario)
+def admin_logs_view(request):
+    """Vista completa para visor de logs"""
+    import logging
+    import os
+    from datetime import datetime, timedelta
+    from django.core.paginator import Paginator
+    
+    # Configurar logging si no está configurado
+    log_dir = os.path.join(settings.BASE_DIR, 'logs')
+    os.makedirs(log_dir, exist_ok=True)
+    
+    # Logs de actividad de usuarios
+    activity_logs = []
+    log_entries = []
+    
+    # Obtener logs recientes de la base de datos
+    recent_operations = HistorialOperacion.objects.select_related('usuario').order_by('-fecha')[:100]
+    
+    for operation in recent_operations:
+        activity_logs.append({
+            'timestamp': operation.fecha,
+            'user': operation.usuario.username,
+            'action': f'Operación: {operation.metodo}',
+            'details': operation.expresion[:50] + '...' if len(operation.expresion) > 50 else operation.expresion,
+            'level': 'INFO'
+        })
+    
+    # Logs de autenticación
+    recent_users = User.objects.filter(last_login__gte=datetime.now() - timedelta(days=7)).order_by('-last_login')
+    
+    for user in recent_users:
+        if user.last_login:
+            log_entries.append({
+                'timestamp': user.last_login,
+                'level': 'INFO',
+                'message': f'Usuario {user.username} inició sesión',
+                'category': 'Authentication'
+            })
+    
+    # Simular algunos logs de sistema
+    import random
+    system_events = [
+        'Inicio de aplicación',
+        'Limpieza de cache completada',
+        'Backup automático ejecutado',
+        'Optimización de base de datos',
+        'Verificación de integridad completada'
+    ]
+    
+    for i in range(20):
+        log_entries.append({
+            'timestamp': datetime.now() - timedelta(hours=random.randint(1, 168)),
+            'level': random.choice(['INFO', 'WARNING', 'DEBUG']),
+            'message': random.choice(system_events),
+            'category': 'System'
+        })
+    
+    # Ordenar todos los logs por fecha
+    all_logs = log_entries + activity_logs
+    all_logs.sort(key=lambda x: x['timestamp'], reverse=True)
+    
+    # Filtros
+    level_filter = request.GET.get('level', 'all')
+    category_filter = request.GET.get('category', 'all')
+    
+    if level_filter != 'all':
+        all_logs = [log for log in all_logs if log.get('level') == level_filter]
+    
+    if category_filter != 'all':
+        all_logs = [log for log in all_logs if log.get('category') == category_filter]
+    
+    # Paginación
+    paginator = Paginator(all_logs, 50)
+    page = request.GET.get('page')
+    logs = paginator.get_page(page)
+    
+    context = {
+        'logs': logs,
+        'total_logs': len(all_logs),
+        'level_filter': level_filter,
+        'category_filter': category_filter,
+        'levels': ['INFO', 'WARNING', 'ERROR', 'DEBUG'],
+        'categories': ['System', 'Authentication', 'Database', 'User Activity']
+    }
+    
+    return render(request, 'admin/admin_logs.html', context)
+
+
+@user_passes_test(es_superusuario)  
+def admin_reports_view(request):
+    """Vista completa para generador de reportes"""
+    from datetime import datetime, timedelta
+    from django.db.models import Count, Avg
+    from django.http import HttpResponse
+    import json
+    
+    # Estadísticas para reportes
+    now = datetime.now()
+    last_month = now - timedelta(days=30)
+    last_week = now - timedelta(days=7)
+    
+    # Datos de usuarios
+    users_data = {
+        'total_users': User.objects.count(),
+        'active_users': User.objects.filter(is_active=True).count(),
+        'new_users_month': User.objects.filter(date_joined__gte=last_month).count(),
+        'new_users_week': User.objects.filter(date_joined__gte=last_week).count(),
+        'staff_users': User.objects.filter(is_staff=True).count(),
+        'superusers': User.objects.filter(is_superuser=True).count(),
+    }
+    
+    # Datos de operaciones
+    operations_data = {
+        'total_operations': HistorialOperacion.objects.count(),
+        'operations_month': HistorialOperacion.objects.filter(fecha__gte=last_month).count(),
+        'operations_week': HistorialOperacion.objects.filter(fecha__gte=last_week).count(),
+        'operations_by_method': list(HistorialOperacion.objects.values('metodo').annotate(count=Count('id'))),
+        'avg_operations_per_user': HistorialOperacion.objects.values('usuario').annotate(count=Count('id')).aggregate(avg=Avg('count'))['avg'] or 0,
+    }
+    
+    # Datos de actividad por día
+    activity_data = []
+    for i in range(30):
+        date = now - timedelta(days=i)
+        count = HistorialOperacion.objects.filter(fecha__date=date.date()).count()
+        activity_data.append({
+            'date': date.strftime('%Y-%m-%d'),
+            'operations': count
+        })
+    
+    activity_data.reverse()
+    
+    # Usuarios más activos
+    top_users = User.objects.annotate(
+        operation_count=Count('historialoperacion')
+    ).order_by('-operation_count')[:10]
+    
+    if request.method == 'POST':
+        report_type = request.POST.get('report_type')
+        
+        if report_type == 'users_json':
+            response = HttpResponse(
+                json.dumps(users_data, indent=2, default=str),
+                content_type='application/json'
+            )
+            response['Content-Disposition'] = f'attachment; filename="users_report_{now.strftime("%Y%m%d_%H%M%S")}.json"'
+            return response
+        
+        elif report_type == 'operations_json':
+            response = HttpResponse(
+                json.dumps(operations_data, indent=2, default=str),
+                content_type='application/json'
+            )
+            response['Content-Disposition'] = f'attachment; filename="operations_report_{now.strftime("%Y%m%d_%H%M%S")}.json"'
+            return response
+        
+        elif report_type == 'full_report':
+            full_report = {
+                'generated_at': now.isoformat(),
+                'users': users_data,
+                'operations': operations_data,
+                'activity': activity_data,
+                'top_users': [{'username': u.username, 'operations': u.operation_count} for u in top_users]
+            }
+            
+            response = HttpResponse(
+                json.dumps(full_report, indent=2, default=str),
+                content_type='application/json'
+            )
+            response['Content-Disposition'] = f'attachment; filename="full_report_{now.strftime("%Y%m%d_%H%M%S")}.json"'
+            return response
+    
+    context = {
+        'users_data': users_data,
+        'operations_data': operations_data,
+        'activity_data': activity_data,
+        'top_users': top_users,
+        'report_date': now
+    }
+    
+    return render(request, 'admin/admin_reports.html', context)
+
+
+@user_passes_test(es_superusuario)
+def admin_maintenance_view(request):
+    """Vista completa para mantenimiento del sistema"""
+    import os
+    import subprocess
+    from django.core.management import call_command
+    from django.core.cache import cache
+    from django.db import connection
+    from django.conf import settings
+    from datetime import datetime
+    
+    # Información del sistema
+    db_size = 0
+    try:
+        db_path = settings.DATABASES['default']['NAME']
+        if os.path.exists(db_path):
+            db_size = os.path.getsize(db_path)
+    except:
+        pass
+    
+    # Estadísticas de cache
+    cache_stats = {
+        'cache_backend': str(cache),
+        'cache_timeout': getattr(settings, 'CACHE_TIMEOUT', 300),
+    }
+    
+    # Información de archivos estáticos
+    static_root = getattr(settings, 'STATIC_ROOT', '')
+    media_root = getattr(settings, 'MEDIA_ROOT', '')
+    
+    static_size = 0
+    media_size = 0
+    
+    try:
+        if static_root and os.path.exists(static_root):
+            static_size = sum(os.path.getsize(os.path.join(dirpath, filename))
+                            for dirpath, dirnames, filenames in os.walk(static_root)
+                            for filename in filenames)
+    except:
+        pass
+    
+    try:
+        if media_root and os.path.exists(media_root):
+            media_size = sum(os.path.getsize(os.path.join(dirpath, filename))
+                           for dirpath, dirnames, filenames in os.walk(media_root)
+                           for filename in filenames)
+    except:
+        pass
+    
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        
+        try:
+            if action == 'clear_cache':
+                cache.clear()
+                messages.success(request, 'Cache limpiado exitosamente')
+            
+            elif action == 'collect_static':
+                call_command('collectstatic', '--noinput')
+                messages.success(request, 'Archivos estáticos recopilados exitosamente')
+            
+            elif action == 'optimize_db':
+                # Para SQLite
+                if 'sqlite' in settings.DATABASES['default']['ENGINE']:
+                    with connection.cursor() as cursor:
+                        cursor.execute("VACUUM;")
+                        cursor.execute("ANALYZE;")
+                    messages.success(request, 'Base de datos optimizada exitosamente')
+                else:
+                    messages.info(request, 'Optimización de BD no disponible para este motor')
+            
+            elif action == 'clean_sessions':
+                call_command('clearsessions')
+                messages.success(request, 'Sesiones antiguas limpiadas exitosamente')
+            
+            elif action == 'check_system':
+                # Verificar integridad del sistema
+                issues = []
+                
+                # Verificar configuración
+                if not settings.DEBUG:
+                    if not settings.ALLOWED_HOSTS:
+                        issues.append('ALLOWED_HOSTS está vacío en producción')
+                
+                # Verificar permisos de archivos
+                if not os.access(settings.BASE_DIR, os.W_OK):
+                    issues.append('Sin permisos de escritura en BASE_DIR')
+                
+                if issues:
+                    messages.warning(request, f'Problemas encontrados: {", ".join(issues)}')
+                else:
+                    messages.success(request, 'Sistema verificado - Sin problemas encontrados')
+            
+            elif action == 'backup_media':
+                # Crear backup de archivos media
+                import shutil
+                
+                backup_dir = os.path.join(settings.BASE_DIR, 'backups', 'media')
+                os.makedirs(backup_dir, exist_ok=True)
+                
+                timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+                backup_path = os.path.join(backup_dir, f'media_backup_{timestamp}')
+                
+                if media_root and os.path.exists(media_root):
+                    shutil.copytree(media_root, backup_path)
+                    messages.success(request, f'Backup de media creado: media_backup_{timestamp}')
+                else:
+                    messages.warning(request, 'No hay archivos media para respaldar')
+        
+        except Exception as e:
+            messages.error(request, f'Error durante la operación: {str(e)}')
+        
+        return redirect('admin_maintenance')
+    
+    # Obtener información del sistema
+    system_info = {
+        'db_size': db_size,
+        'static_size': static_size,
+        'media_size': media_size,
+        'cache_stats': cache_stats,
+        'total_users': User.objects.count(),
+        'total_operations': HistorialOperacion.objects.count(),
+        'active_sessions': 0,  # Placeholder
+        'debug_mode': settings.DEBUG,
+        'database_engine': settings.DATABASES['default']['ENGINE'],
+    }
+    
+    context = {
+        'system_info': system_info,
+        'maintenance_date': datetime.now()
+    }
+    
+    return render(request, 'admin/admin_maintenance.html', context)
+
+@user_passes_test(es_superusuario)
+def admin_config_view(request):
+    """Vista completa para configuración del sistema"""
+    from .models import ConfiguracionSistema, ConfiguracionMetodo
+    
+    config = ConfiguracionSistema.obtener_configuracion()
+    metodos_config = ConfiguracionMetodo.objects.all()
+    
+    # Crear configuraciones por defecto para métodos si no existen
+    metodos_por_defecto = [
+        ('newton', 'Método de Newton-Raphson'),
+        ('biseccion', 'Método de Bisección'),
+        ('secante', 'Método de la Secante'),
+        ('punto_fijo', 'Método de Punto Fijo'),
+        ('integracion', 'Integración Numérica'),
+        ('derivacion', 'Derivación Numérica'),
+    ]
+    
+    for metodo_key, metodo_name in metodos_por_defecto:
+        ConfiguracionMetodo.objects.get_or_create(
+            metodo=metodo_key,
+            defaults={
+                'habilitado': True,
+                'limite_iteraciones': 100,
+                'precision': 0.0001,
+                'tiempo_maximo': 30,
+                'limite_uso_diario': 50,
+                'limite_uso_usuario': 10,
+                'descripcion': f'Configuración para {metodo_name}'
+            }
+        )
+    
+    # Actualizar lista de métodos
+    metodos_config = ConfiguracionMetodo.objects.all()
+    
+    if request.method == 'POST':
+        seccion = request.POST.get('seccion')
+        
+        if seccion == 'general':
+            config.nombre_sistema = request.POST.get('nombre_sistema', config.nombre_sistema)
+            config.descripcion_sistema = request.POST.get('descripcion_sistema', config.descripcion_sistema)
+            config.mantenimiento_activo = request.POST.get('mantenimiento_activo') == 'on'
+            config.mensaje_mantenimiento = request.POST.get('mensaje_mantenimiento', config.mensaje_mantenimiento)
+            config.save()
+            messages.success(request, 'Configuración general actualizada exitosamente')
+        
+        elif seccion == 'limites':
+            config.limite_operaciones_usuario = int(request.POST.get('limite_operaciones_usuario', config.limite_operaciones_usuario))
+            config.limite_operaciones_dia = int(request.POST.get('limite_operaciones_dia', config.limite_operaciones_dia))
+            config.limite_tiempo_sesion = int(request.POST.get('limite_tiempo_sesion', config.limite_tiempo_sesion))
+            config.save()
+            messages.success(request, 'Límites de uso actualizados exitosamente')
+        
+        elif seccion == 'email':
+            config.email_habilitado = request.POST.get('email_habilitado') == 'on'
+            config.smtp_host = request.POST.get('smtp_host', config.smtp_host)
+            config.smtp_port = int(request.POST.get('smtp_port', config.smtp_port))
+            config.smtp_usuario = request.POST.get('smtp_usuario', config.smtp_usuario)
+            config.smtp_password = request.POST.get('smtp_password', config.smtp_password)
+            config.smtp_tls = request.POST.get('smtp_tls') == 'on'
+            config.notificaciones_admin = request.POST.get('notificaciones_admin') == 'on'
+            config.notificaciones_usuario = request.POST.get('notificaciones_usuario') == 'on'
+            config.save()
+            messages.success(request, 'Configuración de email actualizada exitosamente')
+        
+        elif seccion == 'seguridad':
+            config.intentos_login_max = int(request.POST.get('intentos_login_max', config.intentos_login_max))
+            config.tiempo_bloqueo_login = int(request.POST.get('tiempo_bloqueo_login', config.tiempo_bloqueo_login))
+            config.save()
+            messages.success(request, 'Configuración de seguridad actualizada exitosamente')
+        
+        elif seccion == 'metodos':
+            # Actualizar configuración de métodos
+            for metodo_config in metodos_config:
+                metodo_key = metodo_config.metodo
+                metodo_config.habilitado = request.POST.get(f'metodo_{metodo_key}_habilitado') == 'on'
+                metodo_config.limite_iteraciones = int(request.POST.get(f'metodo_{metodo_key}_iteraciones', metodo_config.limite_iteraciones))
+                metodo_config.precision = float(request.POST.get(f'metodo_{metodo_key}_precision', metodo_config.precision))
+                metodo_config.tiempo_maximo = int(request.POST.get(f'metodo_{metodo_key}_tiempo', metodo_config.tiempo_maximo))
+                metodo_config.limite_uso_diario = int(request.POST.get(f'metodo_{metodo_key}_uso_diario', metodo_config.limite_uso_diario))
+                metodo_config.limite_uso_usuario = int(request.POST.get(f'metodo_{metodo_key}_uso_usuario', metodo_config.limite_uso_usuario))
+                metodo_config.save()
+            
+            messages.success(request, 'Configuración de métodos actualizada exitosamente')
+        
+        elif seccion == 'test_email':
+            # Probar configuración de email
+            try:
+                from django.core.mail import send_mail
+                send_mail(
+                    'Test Email - SolverApp',
+                    'Este es un email de prueba desde el sistema de configuración.',
+                    config.smtp_usuario,
+                    [request.user.email],
+                    fail_silently=False,
+                )
+                messages.success(request, 'Email de prueba enviado exitosamente')
+            except Exception as e:
+                messages.error(request, f'Error al enviar email: {str(e)}')
+        
+        return redirect('admin_config')
+    
+    # Estadísticas del sistema
+    total_usuarios = User.objects.count()
+    usuarios_activos = User.objects.filter(is_active=True).count()
+    total_operaciones = HistorialOperacion.objects.count()
+    
+    # Uso de métodos
+    uso_metodos = []
+    for metodo_config in metodos_config:
+        uso_total = HistorialOperacion.objects.filter(metodo=metodo_config.metodo).count()
+        uso_metodos.append({
+            'metodo': metodo_config,
+            'uso_total': uso_total,
+            'uso_activo': uso_total > 0
+        })
+    
+    context = {
+        'config': config,
+        'metodos_config': metodos_config,
+        'uso_metodos': uso_metodos,
+        'total_usuarios': total_usuarios,
+        'usuarios_activos': usuarios_activos,
+        'total_operaciones': total_operaciones,
+        'config_date': datetime.now()
+    }
+    
+    return render(request, 'admin/admin_config.html', context)

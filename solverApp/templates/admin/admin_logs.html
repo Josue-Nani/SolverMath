@@ -1,0 +1,355 @@
+{% extends 'admin/admin_base.html' %}
+{% load static %}
+
+{% block title %}Visor de Logs - Admin{% endblock %}
+
+{% block extra_css %}
+<style>
+    .log-recent {
+        background-color: #fef3c7 !important;
+        border-left: 4px solid #f59e0b !important;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<div class="bg-gradient-to-r from-green-500 to-green-600 text-white p-8 rounded-2xl mb-8 shadow-xl">
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-3xl font-bold mb-2">
+                <i class="fas fa-file-alt mr-3"></i>
+                Visor de Logs del Sistema
+            </h1>
+            <p class="text-green-100">Monitorea la actividad y eventos del sistema en tiempo real</p>
+        </div>
+        <div class="text-right">
+            <div class="text-2xl font-bold">{{ total_logs }}</div>
+            <div class="text-sm text-green-100">Total Logs</div>
+        </div>
+    </div>
+</div>
+
+<!-- Statistics Cards -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <div class="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300">
+        <div class="flex items-center justify-between">
+            <div>
+                <div class="text-2xl font-bold text-blue-600">{{ total_logs }}</div>
+                <div class="text-sm text-gray-600">Total Logs</div>
+            </div>
+            <div class="text-3xl text-blue-500">
+                <i class="fas fa-info-circle"></i>
+            </div>
+        </div>
+    </div>
+    
+    <div class="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300">
+        <div class="flex items-center justify-between">
+            <div>
+                <div class="text-2xl font-bold text-yellow-600">0</div>
+                <div class="text-sm text-gray-600">Advertencias</div>
+            </div>
+            <div class="text-3xl text-yellow-500">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+        </div>
+    </div>
+    
+    <div class="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300">
+        <div class="flex items-center justify-between">
+            <div>
+                <div class="text-2xl font-bold text-red-600">0</div>
+                <div class="text-sm text-gray-600">Errores</div>
+            </div>
+            <div class="text-3xl text-red-500">
+                <i class="fas fa-times-circle"></i>
+            </div>
+        </div>
+    </div>
+    
+    <div class="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300">
+        <div class="flex items-center justify-between">
+            <div>
+                <div class="text-2xl font-bold text-gray-600">0</div>
+                <div class="text-sm text-gray-600">Debug</div>
+            </div>
+            <div class="text-3xl text-gray-500">
+                <i class="fas fa-bug"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Action Buttons -->
+<div class="flex flex-wrap gap-4 mb-6">
+    <button onclick="location.reload()" class="bg-orange-500 hover:bg-orange-600 text-white px-6 py-3 rounded-lg font-semibold transition-colors duration-200 flex items-center gap-2">
+        <i class="fas fa-sync"></i>
+        Actualizar
+    </button>
+    <button onclick="exportLogs()" class="bg-purple-500 hover:bg-purple-600 text-white px-6 py-3 rounded-lg font-semibold transition-colors duration-200 flex items-center gap-2">
+        <i class="fas fa-download"></i>
+        Exportar
+    </button>
+    <button onclick="clearLogs()" class="bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-lg font-semibold transition-colors duration-200 flex items-center gap-2">
+        <i class="fas fa-trash"></i>
+        Limpiar Logs
+    </button>
+</div>
+
+<!-- Filters -->
+<div class="bg-white p-6 rounded-xl shadow-lg mb-8">
+    <form method="get" class="flex flex-wrap gap-4 items-end">
+        <div class="flex-1 min-w-0">
+            <label for="level" class="block text-sm font-medium text-gray-700 mb-1">
+                <i class="fas fa-tag mr-1"></i>Nivel
+            </label>
+            <select name="level" id="level" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
+                <option value="all" {% if level_filter == 'all' %}selected{% endif %}>Todos</option>
+                {% for level in levels %}
+                    <option value="{{ level }}" {% if level_filter == level %}selected{% endif %}>{{ level }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <div class="flex-1 min-w-0">
+            <label for="category" class="block text-sm font-medium text-gray-700 mb-1">
+                <i class="fas fa-layer-group mr-1"></i>Categoría
+            </label>
+            <select name="category" id="category" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
+                <option value="all" {% if category_filter == 'all' %}selected{% endif %}>Todas</option>
+                {% for category in categories %}
+                    <option value="{{ category }}" {% if category_filter == category %}selected{% endif %}>{{ category }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <div class="flex-1 min-w-0">
+            <label for="search" class="block text-sm font-medium text-gray-700 mb-1">
+                <i class="fas fa-search mr-1"></i>Buscar
+            </label>
+            <input type="text" name="search" id="search" placeholder="Buscar en logs..." value="{{ request.GET.search }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
+        </div>
+        
+        <div class="flex gap-2">
+            <button type="submit" class="bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded-lg font-semibold transition-colors duration-200 flex items-center gap-2">
+                <i class="fas fa-filter"></i>
+                Filtrar
+            </button>
+            <a href="{% url 'admin_logs' %}" class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-2 rounded-lg font-semibold transition-colors duration-200 flex items-center gap-2">
+                <i class="fas fa-times"></i>
+                Limpiar
+            </a>
+        </div>
+    </form>
+</div>
+
+<!-- Logs Table -->
+<div class="bg-white rounded-xl shadow-lg overflow-hidden">
+    {% if logs %}
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <i class="fas fa-clock mr-1"></i>Timestamp
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <i class="fas fa-tag mr-1"></i>Nivel
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <i class="fas fa-user mr-1"></i>Usuario
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <i class="fas fa-comment mr-1"></i>Mensaje
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <i class="fas fa-info mr-1"></i>Detalles
+                        </th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for log in logs %}
+                    <tr class="hover:bg-gray-50 transition-colors duration-200">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                            {{ log.timestamp|date:"d/m/Y H:i:s" }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-2 py-1 text-xs font-semibold rounded-full 
+                                {% if log.level|lower == 'info' %}bg-blue-100 text-blue-800
+                                {% elif log.level|lower == 'warning' %}bg-yellow-100 text-yellow-800
+                                {% elif log.level|lower == 'error' %}bg-red-100 text-red-800
+                                {% elif log.level|lower == 'debug' %}bg-gray-100 text-gray-800
+                                {% else %}bg-gray-100 text-gray-800{% endif %}">
+                                {{ log.level }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm">
+                            {% if log.user %}
+                                <span class="font-medium text-gray-900">{{ log.user }}</span>
+                            {% else %}
+                                <span class="text-gray-500 italic">Sistema</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 text-sm text-gray-900 max-w-md">
+                            <div class="truncate">
+                                {% if log.message %}
+                                    {{ log.message }}
+                                {% else %}
+                                    {{ log.action }}
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 text-sm text-gray-500 max-w-sm">
+                            <div class="truncate">
+                                {% if log.details %}
+                                    {{ log.details }}
+                                {% elif log.category %}
+                                    <span class="text-gray-400">{{ log.category }}</span>
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Pagination -->
+        {% if logs.has_other_pages %}
+        <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+            <div class="flex-1 flex justify-between sm:hidden">
+                {% if logs.has_previous %}
+                    <a href="?page={{ logs.previous_page_number }}{% if level_filter != 'all' %}&level={{ level_filter }}{% endif %}{% if category_filter != 'all' %}&category={{ category_filter }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}" 
+                       class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                        Anterior
+                    </a>
+                {% endif %}
+                {% if logs.has_next %}
+                    <a href="?page={{ logs.next_page_number }}{% if level_filter != 'all' %}&level={{ level_filter }}{% endif %}{% if category_filter != 'all' %}&category={{ category_filter }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}" 
+                       class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                        Siguiente
+                    </a>
+                {% endif %}
+            </div>
+            <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                <div>
+                    <p class="text-sm text-gray-700">
+                        Página <span class="font-medium">{{ logs.number }}</span> de <span class="font-medium">{{ logs.paginator.num_pages }}</span>
+                    </p>
+                </div>
+                <div>
+                    <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
+                        {% if logs.has_previous %}
+                            <a href="?page=1{% if level_filter != 'all' %}&level={{ level_filter }}{% endif %}{% if category_filter != 'all' %}&category={{ category_filter }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}" 
+                               class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                                <span class="sr-only">Primera</span>
+                                <i class="fas fa-angle-double-left"></i>
+                            </a>
+                            <a href="?page={{ logs.previous_page_number }}{% if level_filter != 'all' %}&level={{ level_filter }}{% endif %}{% if category_filter != 'all' %}&category={{ category_filter }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}" 
+                               class="relative inline-flex items-center px-2 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                                <span class="sr-only">Anterior</span>
+                                <i class="fas fa-angle-left"></i>
+                            </a>
+                        {% endif %}
+                        
+                        <span class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-green-50 text-sm font-medium text-green-600">
+                            {{ logs.number }}
+                        </span>
+                        
+                        {% if logs.has_next %}
+                            <a href="?page={{ logs.next_page_number }}{% if level_filter != 'all' %}&level={{ level_filter }}{% endif %}{% if category_filter != 'all' %}&category={{ category_filter }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}" 
+                               class="relative inline-flex items-center px-2 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                                <span class="sr-only">Siguiente</span>
+                                <i class="fas fa-angle-right"></i>
+                            </a>
+                            <a href="?page={{ logs.paginator.num_pages }}{% if level_filter != 'all' %}&level={{ level_filter }}{% endif %}{% if category_filter != 'all' %}&category={{ category_filter }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}" 
+                               class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                                <span class="sr-only">Última</span>
+                                <i class="fas fa-angle-double-right"></i>
+                            </a>
+                        {% endif %}
+                    </nav>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    {% else %}
+        <div class="text-center py-12">
+            <div class="text-6xl text-gray-300 mb-4">
+                <i class="fas fa-file-alt"></i>
+            </div>
+            <h3 class="text-lg font-medium text-gray-900 mb-2">No hay logs disponibles</h3>
+            <p class="text-gray-500">No se encontraron logs que coincidan con los filtros seleccionados</p>
+        </div>
+    {% endif %}
+</div>
+
+<script>
+function exportLogs() {
+    const params = new URLSearchParams(window.location.search);
+    params.set('export', 'json');
+    window.location.href = `{% url 'admin_logs' %}?${params.toString()}`;
+}
+
+function clearLogs() {
+    if (confirm('¿Estás seguro de que quieres limpiar todos los logs? Esta acción no se puede deshacer.')) {
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value || 
+                         document.querySelector('meta[name=csrf-token]')?.content;
+        
+        fetch('{% url "admin_logs" %}', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken,
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: 'action=clear_logs'
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Error al limpiar logs: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error al limpiar logs');
+        });
+    }
+}
+
+// Auto-refresh cada 30 segundos
+setInterval(() => {
+    const refreshBtn = document.querySelector('.bg-orange-500');
+    if (refreshBtn && !refreshBtn.disabled) {
+        // Solo refrescar si no hay filtros activos
+        if (window.location.search === '' || window.location.search === '?') {
+            location.reload();
+        }
+    }
+}, 30000);
+
+// Resaltar logs recientes
+document.addEventListener('DOMContentLoaded', function() {
+    const rows = document.querySelectorAll('tbody tr');
+    const now = new Date();
+    const fiveMinutesAgo = new Date(now.getTime() - 5 * 60 * 1000);
+    
+    rows.forEach(row => {
+        const timestampCell = row.querySelector('td:first-child');
+        if (timestampCell) {
+            const timestampText = timestampCell.textContent.trim();
+            // Simple timestamp parsing for recent logs highlighting
+            const timestamp = new Date();
+            if (timestamp > fiveMinutesAgo) {
+                row.classList.add('log-recent');
+            }
+        }
+    });
+});
+</script>
+{% endblock %}
